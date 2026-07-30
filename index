@@ -1,0 +1,787 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tarot - Estude, Compreenda, Integre</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        cinzel: ['Cinzel', 'serif'],
+                        inter: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        app: {
+                            bg: '#110b29',
+                            surface: '#1c143c',
+                            card: '#251b4d',
+                            primary: '#a87ff3',
+                            secondary: '#6c539e',
+                            textMain: '#ffffff',
+                            textMuted: '#a398c2'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #110b29;
+            background-image: 
+                radial-gradient(circle at 15% 50%, rgba(67, 40, 116, 0.4) 0%, transparent 50%),
+                radial-gradient(circle at 85% 30%, rgba(45, 23, 89, 0.4) 0%, transparent 50%);
+            color: white;
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #110b29; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #3b2d75; 
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #a87ff3; 
+        }
+
+        .glass-effect {
+            background: rgba(28, 20, 60, 0.7);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .card-image-placeholder {
+            position: relative;
+            overflow: hidden;
+            border-radius: 1rem;
+        }
+
+        .card-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 1rem;
+        }
+        
+        .pill-active {
+            background: linear-gradient(90deg, #a87ff3, #d0a4ff);
+            color: #110b29;
+            font-weight: 600;
+        }
+        
+        .moon-phases {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 12px;
+            color: #f7e0a3;
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+        }
+        
+        .moon-phases i:nth-child(3) {
+            font-size: 1.8rem;
+            text-shadow: 0 0 15px rgba(247, 224, 163, 0.6);
+        }
+
+        .card-hover:active {
+            transform: scale(0.95);
+        }
+        @media (hover: hover) {
+            .card-hover:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 10px 25px rgba(168, 127, 243, 0.2);
+            }
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col pb-24">
+
+    <!-- Header -->
+    <header class="pt-12 pb-6 px-6 relative z-10">
+        <div class="flex justify-between items-center mb-6">
+            <button class="w-12 h-12 rounded-full bg-app-surface border border-app-secondary/30 flex justify-center items-center text-app-textMuted hover:text-white transition">
+                <i class="fas fa-bars"></i>
+            </button>
+            
+            <div class="text-center">
+                <div class="moon-phases">
+                    <i class="fas fa-moon" style="transform: scaleX(-1);"></i>
+                    <i class="fas fa-circle-half-stroke" style="transform: scaleX(-1);"></i>
+                    <i class="fas fa-circle"></i>
+                    <i class="fas fa-circle-half-stroke"></i>
+                    <i class="fas fa-moon"></i>
+                </div>
+                <h1 class="font-cinzel tracking-[0.3em] text-3xl font-bold mt-2 text-white">TAROT</h1>
+                <p class="text-[0.65rem] tracking-[0.2em] text-app-textMuted mt-1 uppercase">Estude • Compreenda • Integre</p>
+            </div>
+            
+            <button class="w-12 h-12 rounded-full bg-app-surface border border-app-secondary/30 flex justify-center items-center text-app-primary hover:text-white transition">
+                <i class="fas fa-sparkles"></i>
+            </button>
+        </div>
+
+        <!-- Search Bar -->
+        <div class="relative w-full mb-6 group">
+            <i class="fas fa-search absolute left-5 top-1/2 transform -translate-y-1/2 text-app-textMuted group-focus-within:text-app-primary transition"></i>
+            <input type="text" id="searchInput" placeholder="Pesquisar arcano..." 
+                class="w-full bg-app-surface border border-app-secondary/30 rounded-full py-4 pl-12 pr-12 text-sm text-white placeholder-app-textMuted focus:outline-none focus:border-app-primary focus:ring-1 focus:ring-app-primary transition shadow-lg">
+            <button class="absolute right-5 top-1/2 transform -translate-y-1/2 text-app-primary">
+                <i class="fas fa-sliders-h"></i>
+            </button>
+        </div>
+
+        <!-- Filter Pills -->
+        <div class="flex gap-3 overflow-x-auto pb-2 scrollbar-hide snap-x">
+            <button onclick="filterCards('todos')" id="btn-todos" class="filter-btn pill-active whitespace-nowrap px-6 py-2.5 rounded-full text-sm snap-start flex items-center gap-2 shadow-lg shadow-app-primary/20 transition">
+                <i class="fas fa-sparkles text-xs"></i> Todos
+            </button>
+            <button onclick="filterCards('maior')" id="btn-maior" class="filter-btn bg-app-surface border border-app-secondary/30 text-app-textMuted whitespace-nowrap px-6 py-2.5 rounded-full text-sm snap-start hover:bg-app-card transition">
+                Arcanos Maiores
+            </button>
+            <button onclick="filterCards('menor')" id="btn-menor" class="filter-btn bg-app-surface border border-app-secondary/30 text-app-textMuted whitespace-nowrap px-6 py-2.5 rounded-full text-sm snap-start hover:bg-app-card transition">
+                Arcanos Menores
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-1 px-6 relative z-10">
+        <div class="flex justify-between items-center mb-4 text-xs text-app-textMuted">
+            <span id="cardCount">...</span>
+            <button class="flex items-center gap-1 hover:text-white transition">
+                Ordenar: Nome <i class="fas fa-chevron-down text-[10px]"></i>
+            </button>
+        </div>
+
+        <!-- Cards Grid -->
+        <div id="cardsGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+            <!-- Cards injected via JS -->
+        </div>
+    </main>
+
+    <!-- Bottom Nav -->
+    <nav class="fixed bottom-0 left-0 w-full glass-effect z-40 pb-safe pt-3 px-6 rounded-t-3xl shadow-[0_-10px_40px_rgba(0,0,0,0.3)]">
+        <div class="flex justify-between items-center max-w-md mx-auto mb-3">
+            <a href="#" class="flex flex-col items-center gap-1 text-app-primary">
+                <i class="fas fa-sparkles text-xl drop-shadow-[0_0_8px_rgba(168,127,243,0.6)]"></i>
+                <span class="text-[10px] font-medium">Explorar</span>
+            </a>
+            <a href="#" class="flex flex-col items-center gap-1 text-app-textMuted hover:text-white transition">
+                <i class="far fa-heart text-xl"></i>
+                <span class="text-[10px] font-medium">Favoritos</span>
+            </a>
+            <a href="#" class="flex flex-col items-center gap-1 text-app-textMuted hover:text-white transition">
+                <i class="fas fa-book text-xl"></i>
+                <span class="text-[10px] font-medium">Diário</span>
+            </a>
+            <a href="#" class="flex flex-col items-center gap-1 text-app-textMuted hover:text-white transition">
+                <i class="fas fa-info-circle text-xl"></i>
+                <span class="text-[10px] font-medium">Sobre</span>
+            </a>
+            <a href="#" class="flex flex-col items-center gap-1 text-app-textMuted hover:text-white transition">
+                <i class="far fa-user text-xl"></i>
+                <span class="text-[10px] font-medium">Perfil</span>
+            </a>
+        </div>
+    </nav>
+
+    <!-- Detailed Card Modal -->
+    <div id="cardModal" class="fixed inset-0 z-50 hidden">
+        <div class="absolute inset-0 bg-app-bg/80 backdrop-blur-sm" onclick="closeModal()"></div>
+        <div class="absolute bottom-0 left-0 w-full bg-app-surface h-[85vh] rounded-t-[2.5rem] flex flex-col shadow-[0_-10px_50px_rgba(0,0,0,0.5)] border-t border-app-secondary/20 transform transition-transform duration-300 translate-y-full" id="modalContent">
+            
+            <!-- Handle -->
+            <div class="w-full flex justify-center pt-4 pb-2" onclick="closeModal()">
+                <div class="w-16 h-1.5 bg-app-textMuted/30 rounded-full"></div>
+            </div>
+
+            <!-- Header -->
+            <div class="px-8 pb-4 flex justify-between items-start border-b border-white/5">
+                <div class="flex items-center gap-4">
+                    <img id="modalImage" src="" alt="" class="w-16 h-24 object-cover rounded-lg border border-app-secondary/50">
+                    <div>
+                        <span id="modalNumber" class="font-cinzel text-app-primary text-sm font-bold tracking-widest"></span>
+                        <h2 id="modalTitle" class="font-cinzel text-2xl font-bold text-white mt-1"></h2>
+                    </div>
+                </div>
+                <button onclick="closeModal()" class="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-app-textMuted hover:text-white transition flex-shrink-0">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <!-- Scrollable Content -->
+            <div class="flex-1 overflow-y-auto px-8 py-6 space-y-8" id="modalBody">
+                <!-- Content injected here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Application Logic and Data -->
+    <script>
+        const baseUrl = "https://marycusack.com/Decks/Images/Tarot/S/SeventhSphere2/";
+        
+        // Template para cartas não preenchidas
+        const tplVazio = {
+            "Núcleo": "• Essência: Em breve.<br>• Definição: Conteúdo em desenvolvimento.",
+            "Atributo básico": "• Material: Em breve.<br>• Mental: Em breve.<br>• Sentimental: Em breve.<br>• Espiritual: Em breve."
+        };
+
+        const rawData = [
+            // ==========================================
+            // ARCANOS MAIORES
+            // ==========================================
+            { name: "O Louco", type: "maior", number: "0", imgUrl: `${baseUrl}00%20Fool.jpg`, sections: {
+                "Núcleo": "• Essência: ousar, evoluir, expandir, partir.<br>• Definição: momento repleto de liberdade, livre-arbítrio e des-prendimento; férias e lazer como tônica em tudo; alegria de viver cada momento, embora sem grandes definições; irreflexão, insensatez ou excessos que geram dívidas ou insucesso.<br>• Advertência: organizar as ideias, ser mais coerente e menos curioso; ter atenção com a palavra dada ou o compromisso assumido, reveja as responsabilidades; extremo cuidado com a dispersão e o desmazelo; rever o planejamento para o futuro.",
+                "Atributo básico": "• Material: precipitação e desperdício de tempo ou dinheiro; negligência ou busca indefinida por novos caminhos; criação dos próprios obstáculos e problemas reais, transição importante na vida, mas gerando obstáculos por falta de organização.<br>• Mental: indecisão, incoerência ou desorganização que causa atrasos; desatenção e irreflexão originando insensatez ou escapismo; imaturidade ou ingenuidade nos planos futuros; expressão eloquente, comunicação alegre, fala confusa e sem foco.<br>• Sentimental: prazer e alegria que motivam a relação; aventura, imaturidade e frivolidade imperam no momento; impulso, entusiasmo ou excitação que aparentam ser o amor verdadeiro; extravagância ou inquietação; leviandade ou hedonismo.<br>• Espiritual: desordem e negativismo no canal mediúnico; involução, regressão ou vazio espiritual que se instala momentaneamente; interferência contrária e caos no plano astral, miasma; sem direção religiosa ou devoção a alguma divindade.",
+                "Atributo diverso": "• Negativo/invertido: moderação e objetividade que resultam em lucros ou sucesso; respeito e maturidade geram perfeita amizade e bom relacionamento; excelentes acordos, contratos e promessas que serão cumpridas a contento; não há obstáculos.<br>• Obstáculo/oposição: falta de se lançar ao desconhecido, pois o momento é de extrema valia ao progresso; caminhos fechados por falta de iniciativa ou preguiça; sem entusiasmo ou entrega emocional em situações importantes.<br>• Orientação/conselho: ser ousado e pesquisar novos horizontes; buscar inovações e ser flexível diante dos obstáculos; ser mais dinâmico com as próprias ideias; investir ou se arriscar mais nos desejos; não ouvir ninguém, apenas a intuição."
+            }},
+            { name: "O Mago", type: "maior", number: "I", imgUrl: `${baseUrl}01%20Magician.jpg`, sections: {
+                "Núcleo": "• Essência: criar, iniciar, aspirar, expectar.<br>• Definição: inspiração e criatividade se unem para a concepção de um objetivo; todos os caminhos estão abertos e a força de vontade será a energia motriz; procura imediata de independência; desejo de uma nova vida é a tônica da circunstância.<br>• Advertência: é preciso analisar as propostas apresentadas, observar os sentimentos pessoais em relação ao futuro; não dispersar ou buscar a perfeição, crer em si, continuar, seguir ir em frente com os objetivos apresentados, tudo é possível.",
+                "Atributo básico": "• Material: habilidade e destreza em toda situação; iniciativa, interesse, perícia na aquisição; pesquisa para realizar algo rapidamente, especulação, investigação; boa vitalidade, tendências favoráveis a todos os aspectos físicos e materiais.<br>• Mental: criatividade, nova ideia ou início de algum ideal; flexibilidade e astúcia com projetos recentes; novo paradigma, meta ou talento a ser desenvolvido; comunicação efusiva, boa expressão, eloquência ao falar e ao expressar os planos.<br>• Sentimental: expectativa e aspiração para melhorar a vida afetiva; vontade efêmera, espontaneidade excessiva ou desejo frágil, entretanto, dependendo da reciprocidade, pode evoluir positivamente; busca de alegrias e novidades.<br>• Espiritual: início de novas filosofias ou investigação da espiritualidade; tendência de maior consciência do universo cósmico ou religioso; mediunidade, realização de rituais ou de orações para encontrar o autoconhecimento.",
+                "Atributo diverso": "• Negativo/invertido: desânimo, inércia e falta de perspectiva; vontade fraca diante dos objetivos, insegurança ou incapacidade de analisar os fatos; falsidade, palavras vãs que permeiam a situação; orientação falha, possível discussão sem motivo.<br>• Obstáculo/oposição: falta de iniciativa, de criatividade ou de reorganização; não consegue se adaptar ao movimento da vida; não expressa a própria vontade, não age como deseja; cuidado com o desdém, não invalide a opinião alheia.<br>• Orientação/conselho: não se devem aguardar somente as forças do destino agirem, é necessário aproveitar as oportunidades, trilhar por novos caminhos; (re)criar, (re)inventar e dialogar com todos é a melhor maneira de alcançar os objetivos."
+            }},
+            { name: "A Sacerdotisa", type: "maior", number: "II", imgUrl: `${baseUrl}02%20Priestess.jpg`, sections: {
+                "Núcleo": "• Essência: refletir, conhecer, analisar, estudar.<br>• Definição: entrega ao mundo contemplativo e fraternal; reserva e discrição; paciência e silêncio como forma de autoproteção; passividade diante de situações importantes, medo de errar; impossibilidade de compartilhar o que pensa ou sente.<br>• Advertência: o fundamental é agir imediatamente, parar de buscar a perfeição ou ter receio de falar o que pensa ou sente; tudo é possível contanto que se esforce, solicite conselhos a amigos ou familiares; confie em si, avante!",
+                "Atributo básico": "• Material: burocracia ou dependência de terceiros para a realização; contrato ou negociação ainda em análise; falta de conclusão do objetivo, passividade ou inação diante de algo importante; muito trabalho com pouca consequência imediata.<br>• Mental: reflexão excessiva, pesquisa, investigação; sabedoria, memorização, bom senso; segredos efêmeros, ocultação do planejamento; falta de expressão verbal sobre os próprios propósitos, sem articulação da vontade; fala serena, suave.<br>• Sentimental: virtude, fidelidade, dedicação; supressão do desejo, inibição, ressentimento oculto e passageiro; receio de se entregar ao amor, carência afetiva, mágoa; para solteiros pode indicar amor platônico ou não correspondido.<br>• Espiritual: serenidade, devoção, crença e pureza de alma; filantropia e piedade do mundo; boa intuição e aceitação da fé, autoavaliação espiritual ou da vida; momento peculiar no qual se tenta conhecer a própria alma para evoluir.",
+                "Atributo diverso": "• Negativo/invertido: precipitação por insegurança, julgamento incorreto, agir sem pensar; todas as forças construtivas estão invalidadas; desacordo contratual ou promessa rompida; discurso demasiadamente longo quando deveria ter discrição.<br>• Obstáculo/oposição: falta de reflexão ou aceitação dos limites pessoais; não concebe outras formas de planejamento; incapaz de compartilhar ou servir, devendo buscar objetividade e discernimento diante da situação apresentada.<br>• Orientação/conselho: analisar com cuidado os fatos, ainda não é o momento de se expressar ou falar o que pensa; não há perigos, mas a situação carece de melhor reflexão e observação do meio circundante; meditar pode ser uma boa saída."
+            }},
+            { name: "A Imperatriz", type: "maior", number: "III", imgUrl: `${baseUrl}03%20Empress.jpg`, sections: {
+                "Núcleo": "• Essência: deduzir, cumprir, produzir, transmitir.<br>• Definição: prosperidade e alegria se pronunciam abertamente; crescimento e realização plena surgem em passos acelerados; o sucesso é garantido mesmo que diante de inúmeros problemas; tudo se resolve com sorte e caminhos abertos.<br>• Advertência: manter a mesma intensidade dos desejos; não mudar plano ou ação alguma, tudo se define naturalmente, pois as situações já estão em andamento para um desfecho positivo; o sucesso chega se observar as promessas e atitudes.",
+                "Atributo básico": "• Material: prosperidade, crescimento e fertilidade em todas as questões tangíveis; solução para todo tipo de problema, realização em breve, bem-estar; adaptação e harmonia à volta; tudo caminha para a conclusão, muitas alegrias à vista.<br>• Mental: dedução plena e inteligência criativa para qualquer situação; momento de perspicácia e sensatez; planejamento correto e eficaz para o desejado; verbaliza com clareza e verdade tudo o que se encontra na alma, comunicação vibrante.<br>• Sentimental: vontade direcionada para o prazer e a alegria; equilíbrio emocional para assegurar o futuro; afabilidade, confiança e desejo de melhorar tudo o que possui; sensualidade e possível entrega ao verdadeiro amor; satisfação, regozijo.<br>• Espiritual: compreensão dos obstáculos e afirmação da esperança; busca pelo equilíbrio pessoal ou familiar mediante alguma crença ou magia; meditação para um mundo melhor; proteção de hostes superiores de luz, bom auspício.",
+                "Atributo diverso": "• Negativo/invertido: demora na realização por improdutividade ou desinteresse; fracasso iminente ou limitação pessoal; frieza e dissimulação permeiam as relações; vaidade e futilidade que trarão desgosto; infertilidade, indecisão, inércia.<br>• Obstáculo/oposição: falta de atenção que dificulta o desenvolvimento; descuido com os bens ou os planos; desinteresse por uma situação tão desejada; falta de satisfação ou de alegria, tendência à tristeza; sem raciocínio lógico.<br>• Orientação/conselho: não perder tempo com perfeição ou pensamento inútil; não hesitar, não duvidar de nada, seguir em frente rumo ao desejado; todos os caminhos estão abertos, tudo se realizará; aproveitar as chances da vida; avançar."
+            }},
+            { name: "O Imperador", type: "maior", number: "IV", imgUrl: `${baseUrl}04%20Emperor.jpg`, sections: {
+                "Núcleo": "• Essência: concentrar, poder, realizar, vencer.<br>• Definição: manutenção ou realização dos ideais; controle sobre a própria vida e o livre-arbítrio; afirmação do desejo e da influência sobre os demais; competência nas metas e conquistas; situação bem definida e consolidada em médio prazo.<br>• Advertência: ter paciência e ouvir as opiniões alheias; observar e aprender com os erros dos outros; ser condescendente, afável e menos tenso em todas as situações para conseguir a felicidade almejada; cuidado com a arrogância e o julgamento.",
+                "Atributo básico": "• Material: manutenção e continuidade da situação; estabilidade ou controle momentâneo; poder e realização em curto prazo; força da autoridade pessoal domina tudo a volta; capacidade para solucionar problemas.<br>• Mental: ideias objetivas e práticas; racional, moralista e intolerante; convicção, inflexibilidade em planos futuros; estagnação nas ações presentes; a comunicação é ríspida e sem tato, mas direta e clara; fala o essencial, poucas palavras.<br>• Sentimental: possessivo e opressor; não admite que neguem o seu desejo e atenção; embora apegado, não dá carinho e atenção nos relacionamentos; aparente insensibilidade; não conhece a felicidade pelo medo de perder o que possui.<br>• Espiritual: não há crença religiosa rígida, acredita em si mesmo e naquilo que faz; estágio pragmático e individualista; ausência de compreensão em um mundo melhor; não se trata de ateísmo, mas de um isolamento momentâneo.",
+                "Atributo diverso": "• Negativo/invertido: limitação e fraqueza impedem o sucesso; indecisão e passividade que resultam em estagnação em longo prazo; incapacidade de fechar qualquer tipo de acordo; despotismo e arbitrariedade prejudicam as realizações.<br>• Obstáculo/oposição: falta de poder e controle sobre os fatos; descontrole sobre as opiniões ou o meio ambiente, bagunça ou desordem, falta de observação prática da situação; isolamento desnecessário, autocontrole exagerado e inútil.<br>• Orientação/conselho: não fraquejar naquilo que é mais importante, não se deixar levar por ideias alheias; o mais importante é manter a autoridade e impor a vontade pessoal; continuar com os objetivos para atingir o sucesso."
+            }},
+            { name: "O Papa", type: "maior", number: "V", imgUrl: `${baseUrl}05%20Hierophant.jpg`, sections: {
+                "Núcleo": "• Essência: ordenar, disciplinar, cumprir, crer.<br>• Definição: organização da vida, tudo se equilibra ou se harmoniza, realização com estruturas bem definidas; forças positivas que se estabelecem nas associações, nos contratos ou nas uniões; o sucesso existe somente na legalidade da causa.<br>• Advertência: ser flexível, tentar ouvir o próximo, trocar ideias e aceitar novas possibilidades de solução além das objetivadas; e o conselho mais sério de todos: sempre agir com honra e virtude.",
+                "Atributo básico": "• Material: reconciliação ou reorganização dos problemas, mas tudo deve ser feito por vias legais ou morais; contrato, associação ou união com objetivos em comum; responsabilidade e integridade nas ações; acerto de débitos, reclassificação; cura.<br>• Mental: ideia preconcebida, rigidez de opinião, convicção, inflexibilidade, dogma, moralidade, parcialidade, irredutibilidade, falta de criatividade; comunicação e expressão moderadas, diplomacia, voz serena, prudência nas palavras.<br>• Sentimental: fidelidade, afeição, benevolência, bondade, amizade, carinho, servidão, condescendência, compaixão; o amor existe como meio de preservação do que há de mais precioso. Para solteiros: amizade; para casados: lealdade.<br>• Espiritual: religiosidade ou crença absoluta em um segmento espiritual; perdão, clemência ou benevolência nas relações sociais; tenta-se compreender o outro sob o princípio da fé; proteção angelical, caminhos espirituais que se abrem.",
+                "Atributo diverso": "• Negativo/invertido: prejuízo ou perda por causa do orgulho; dívidas que geram empobrecimento; retardamento, renúncia, fragilidade; infidelidade, separação; demissão, desunião, discussão; caos moral ou jurídico; obscuridade, fé cega.<br>• Obstáculo/oposição: falta de organização, desacordo jurídico, promessa que não será cumprida, ausência de perspectiva ou de ajuda social ou espiritual; incapacidade de realizar o que se deseja ou atingir as metas.<br>• Orientação/conselho: não permitir que terceiros digam o que se deve fazer, tenha opinião; aja na legalidade ou dentro dos princípios morais nos quais está inserido; seja fiel e honesto, honre a palavra abonada, caso contrário, tudo se perde."
+            }},
+            { name: "Os Enamorados", type: "maior", number: "VI", imgUrl: `${baseUrl}06%20Lovers.jpg`, sections: {
+                "Núcleo": "• Essência: escolher, reunir, desejar, harmonizar.<br>• Definição: todos os caminhos estão abertos, a sorte acena com a prosperidade; há múltiplas chances, mas deve-se escolher apenas uma; nesse momento o destino não interfere na decisão; usar o arbítrio pensando no futuro e não no presente.<br>• Advertência: eliminar a ansiedade e o nervosismo, cuidado em somente desejar a perfeição; é impossível ter tudo ao mesmo tempo, tenha um olhar mais frio para a realidade, sendo mais objetivo e prático nas atitudes; não especule com o tarô.",
+                "Atributo básico": "• Material: oportunidade, benefício, oferta e caminho aberto; aumento de capital ou trabalho; sociedade, acordo ou compromisso positivo; várias possibilidades de sucesso e desenvolvimento nas quais somente o consulente pode escolher.<br>• Mental: escolhas, opções, dúvidas, hesitação, indecisão ou reflexão desnecessária; ideias e projetos que estão sendo influenciados negativamente; possível desatenção com a realidade; expressão gentil e afetuosa, fala moderada e diplomática.<br>• Sentimental: afeto e amor que tendem ao romantismo; magnetismo e forte libido; desejo de ser amado e feliz. Para os solteiros: desejo em experimentar a paixão em profundidade; para os casados: forte sensualidade, harmonia e amor.<br>• Espiritual: canalização natural com seres de luz, mediunidade e forte intuição; possibilidade de vidência ou presságio por intermédio de sonhos (oniromancia); sacrifício em prol de quem se ama; busca de novas crenças ou filosofias."
+            }},
+            { name: "O Carro", type: "maior", number: "VII", imgUrl: `${baseUrl}07%20Chariot.jpg`, sections: {
+                "Núcleo": "• Essência: direcionar, desenvolver, querer, progredir.<br>• Definição: os esforços serão recompensados, vitória e progresso em diversas direções; força de vontade e energia que são absolutamente canalizadas para o desenvolvimento; caminhos desbravados exclusivamente pelo consulente, sorte.<br>• Advertência: agir com cautela, seguir moderadamente usando a reflexão passo a passo, não desistir diante de obstáculos; apesar de se encontrar no caminho certo, solicite conselho aos amigos, observe a experiência alheia; siga a ordem e as leis.",
+                "Atributo básico": "• Material: aquisição, realização, progresso, vitória ou desenvolvimento surgem rapidamente; bons contratos ou mudança desejada; popularidade ou poder para superar qualquer obstáculo; boas notícias e muita sorte nas atividades em geral.<br>• Mental: determinação, diretriz e inteligência como ponto forte do momento; criatividade, capacidade de organização ou ideia arrojada que deve ser mantida; fluência verbal e boa comunicação, firmeza na voz e na colocação dos projetos.<br>• Sentimental: impulsividade, entusiasmo, magnetismo, coragem, alegria. Para solteiros: as emoções são intensas e profundas, mas estão controladas; para casados: independência afetiva com sinceridade e entrega total ao parceiro.<br>• Espiritual: mediunidade, poder mágico, projeção astral, controle mental; todos os objetivos estão impregnados de magnetismo astral positivo; há uma força incomum que deve ser direcionada por meio de alguma doutrina ou religião.",
+                "Atributo diverso": "• Negativo/invertido: inércia e atraso; dificuldades para solucionar algum obstáculo; ruptura ou suspensão de projetos; fracasso iminente, devendo se preparar para sérios prejuízos; derrota e submissão a terceiros, tendência a perder, armadilha.<br>• Obstáculo/oposição: falta de motivação e planejamento adequado, sem força de vontade para equilibrar ou harmonizar o ambiente; falta de força de vontade e ação para atingir as metas, desejo fraco mediante fatos positivos; conflitos recorrentes.<br>• Orientação/conselho: querer é poder, já dizia um antigo guru; mas de que vale o querer se não há atitude? Deve-se imediatamente seguir adiante com os planos e desejos! O progresso existe, mas é preciso ter diretriz e observar continuamente a meta. O mais importante é seguir em frente."
+            }},
+            { name: "A Força", type: "maior", number: "VIII", imgUrl: `${baseUrl}11%20Strength.jpg`, sections: {
+                "Núcleo": "• Essência: controlar, dominar, conter, conseguir.<br>• Definição: momento ímpar da vida, no qual se obtém tudo o que deseja de maneira equilibrada, virtuosa e honrada; vitória da inteligência sob a ignorância; o controle (mas não a solução) de todos os problemas com força moral e natural.<br>• Advertência: aceitar os limites, dar valor ao próximo, ouvir conselhos e trocar ideias, evitar querer dar a última palavra; nesse momento, a reciprocidade é a chave para o sucesso pleno, devendo prevalecer a paciência e a tolerância.",
+                "Atributo básico": "• Material: sucesso e domínio sobre todas as situações, controle e segurança profissional ou financeira; empreendimento total ou vitória absoluta da vontade; equilíbrio e poder em qualquer circunstância; realizações por livre-arbítrio, sorte.<br>• Mental: determinação e convicção, mas com paciência e serenidade; inteligência criativa, planejamento perfeito ou zelo nos projetos; lógica e julgamento sadio; expressão e comunicação bem equilibrada, boa retórica e excelente argumentação.<br>• Sentimental: equilíbrio e segurança emocional como base do amor ou da relação; magnetismo e afetividade em abundância; desejo e libido bem controlados e direcionados ao parceiro; domínio sobre as paixões como forma de autoproteção.<br>• Espiritual: retorno ao equilíbrio e à paz interior; força positiva que envolve a aura e os chacras; proteção de seres superiores e de luz; poder mágico que deve ser usado para o bem ou causas nobres; magnanimidade e ajuda ao próximo.",
+                "Atributo diverso": "• Negativo/invertido: descontrole e impaciência; atitude desregrada ou fraqueza na determinação; fracasso por falta de objetividade, preguiça e malevolência; egocentrismo e insensatez; atitudes antipáticas, perda do poder e da barganha.<br>• Obstáculo/oposição: falta de autocontrole ou de autoestima; tudo o que se tenta fazer não resulta em positividade; deseja ardentemente acertar, mas sempre erra; falta de perspicácia ou de análise mais racional da situação; timidez.<br>• Orientação/conselho: ser forte e dominar a situação com toda coragem, pois tudo é possível; não temer perdas ou inglórias uma vez que todos os caminhos estão abertos; não acreditar na palavra alheia, somente na própria decisão; tenha fé."
+            }},
+            { name: "O Eremita", type: "maior", number: "IX", imgUrl: `${baseUrl}09%20Hermit.jpg`, sections: {
+                "Núcleo": "• Essência: saber, pesquisar, revelar, ensinar.<br>• Definição: busca da sabedoria e da paz interior; obstáculos e prejuízos que serão sanados e reorganizados; adiamentos de ações ou realizações, mas com sucesso sólido em longo prazo; tudo indica solução e benefícios para o consulente.<br>• Advertência: compreender os percalços ou o tempo necessário para se processar o desejo; cuidado com a ansiedade que poderá ser prejudicial; acelerar os fatos e nunca desistir das ideias, ousar mais no desenvolvimento das situações.",
+                "Atributo básico": "• Material: progresso lento ou obstáculo superável; adiamento por burocracia ou intempérie; desenvolvimento em longo prazo; prudência e reserva na ação; negócios e contratos bem elaborados; força de vontade que será recompensada.<br>• Mental: estudos avançados ou busca da sabedoria interior; pesquisa para uma nova vida ou profissão; planejamento e prudência; desconfiança dos erros alheios; expressão cautelosa, fala moderada ou silenciosa e reserva do que deseja.<br>• Sentimental: equilíbrio emocional, afeto verdadeiro e paz interior; interiorização, calma, busca de isolamento para melhorar a conduta pessoal; amizade profunda, cumplicidade, autossuficiência; alívio e autoconfiança após grandes conflitos.<br>• Espiritual: busca de iluminação e de consciência da vida; descoberta de novas aptidões, mediunidade, percepção e conhecimento transcendental; sabedoria, meditação, oração ou rituais como forma de autoconhecimento.",
+                "Atributo diverso": "• Negativo/invertido: imprudência e precipitação nos acordos ou na conduta; precaução excessiva ou perfeição exagerada que resulta em fracasso; imaturidade, discórdia e discussão; ignorância, erros de análise e conselhos inúteis.<br>• Obstáculo/oposição: falta de consciência ou sabedoria dos fatos que envolvem a situação; incerteza quanto ao sucesso, que pode ser garantido; ansiedade e tormenta por falta de visão em longo prazo; imobilidade ou medo do futuro.<br>• Orientação/conselho: estimular o equilíbrio interior e a serenidade; a paciência é o melhor caminho para encontrar as soluções ou entender os pequenos obstáculos que se revelam; não se deixar envolver pela ansiedade ou pelo negativismo."
+            }},
+            { name: "A Roda da Fortuna", type: "maior", number: "X", imgUrl: `${baseUrl}10%20Wheel.jpg`, sections: {
+                "Núcleo": "• Essência: transitar, mudar, atuar, experimentar.<br>• Definição: instabilidade ou dificuldade em encontrar uma solução rápida ou eficaz; alterações que apontam para novos caminhos; interferência de terceiros nas realizações pessoais; problemas passageiros ou mudanças que não alteram o status.<br>• Advertência: ter calma e buscar a ajuda de amigos; encontrar equilíbrio interno, concentrando-se nos objetivos; foco e determinação são as palavras-chave no momento; cuidado para não supervalorizar pequenas coisas e sem sentido prático.",
+                "Atributo básico": "• Material: instabilidade com pequenos obstáculos superáveis, oscilação da rotina ou novidade que gera ansiedade, reforma; promoção, mudança benéfica, oportunidade ou acontecimento afortunado; sorte ou azar (o arcano menor revela o caminho).<br>• Mental: multiplicidade de ideias, incerteza, indecisão; incoerência com o próprio ritmo de vida, plano desconexo com as atitudes, dispersão, escapismo; expressão agitada, fala acelerada, costuma comentar mais do que devia sobre si ou os outros.<br>• Sentimental: ansiedade, inconstância ou insegurança emocional, nervosismo desnecessário; novo interesse afetivo (solteiro) ou redescoberta da relação (casado), mas sem a autoconfiança necessária (ambos); possível aflição ou agonia.<br>• Espiritual: negatividade causada por terceiros (inveja, mau-olhado, feitiçaria); perda da força anímica; oscilação da fé, dúvidas devocionais. Essa carta alerta para que se busque ajuda, proteção ou um tratamento para fortalecer a energia astral.",
+                "Atributo diverso": "• Negativo/invertido: interrupção ou fracasso se apresenta sem piedade; dificuldade em qualquer tipo de acordo ou de contrato; inação, obstáculo e atraso por grande período de tempo; distanciamento e frieza, razão exagerada que causa conflitos.<br>• Obstáculo/oposição: tudo se encontra nas mãos do destino, não há nada que se possa fazer; o tempo é o senhor da razão (já dizia um ditado popular); o melhor a fazer é aceitar o movimento cíclico que se apresenta; cuidado com a ansiedade.<br>• Orientação/conselho: ser flexível, aceitar as mudanças, deixar o destino fluir, encontrar nas oportunidades uma forma de criar novos caminhos; cuidado com a dispersão e a ansiedade que podem deter o avanço benéfico da vida."
+            }},
+            { name: "A Justiça", type: "maior", number: "XI", imgUrl: `${baseUrl}08%20Justice.jpg`, sections: {
+                "Núcleo": "• Essência: avaliar, julgar, redefinir, equilibrar.",
+                "Atributo básico": "• Material: reavaliação e cuidado devem ser a tônica; definição de situações pendentes há muito tempo; aconselha-se estar em alerta nas realizações e buscar o justo e o verdadeiro para todos; possibilidade de mudança por decisão própria.<br>• Mental: racionalidade, organização e rigor como meta principal; pragmatismo, imparcialidade ou busca da verdade que resulta em intransigência; expressão severa e corretiva; oralidade sem emoção, lacônica e sempre questionadora.<br>• Sentimental: distanciamento ou frieza afetiva; retidão que resulta em isolamento; redefinição e avaliação da relação; não deseja se envolver mais que o necessário; sem libido. Para solteiros: forte amizade; para casados: falta de carinho e atenção.<br>• Espiritual: proteção de entidades de luz; busca de harmonia, equilíbrio ou verdade; disciplina da fé ou do avanço em estudos místicos; todas as energias negativas são eliminadas, todos os obstáculos astrais são desfeitos para o avanço da vida.",
+                "Atributo diverso": "• Negativo/invertido: abuso de poder, injustiça, acusações falsas; forte emoção causando brigas e rupturas; tendência ao fracasso, perdas ou prejuízos; inimigos estão com força para bloquear os desejos do consulente, deve-se ter muito cuidado.<br>• Obstáculo/oposição: falta de organização, de metas ou de discernimento do que se deseja atingir; falta de capacidade de autoanálise, medo de opinar e se posicionar diante do próprio desejo; falta de ponderação e cautela diante dos obstáculos.<br>• Orientação/conselho: ser mais racional e adotar uma linha de conduta imparcial; determinar ou revalidar os projetos de forma mais clara; honrar a palavra dada, cumprir os acordos verbais ou contratuais; rever cada passo do objetivo final."
+            }},
+            { name: "O Pendurado", type: "maior", number: "XII", imgUrl: `${baseUrl}12%20Hanged.jpg`, sections: {
+                "Núcleo": "• Essência: resignar, renunciar, calar, paralisar.<br>• Definição: improdutividade, suspensão ou obstáculo se estabelecem por longo período; não há a menor chance de realização material, nem de uma felicidade duradoura ou alguma mudança do que se deseje; estagnação, impotência, tédio.<br>• Advertência: cuidado com a utopia, observar a realidade e o meio ambiente; reavaliar o futuro e buscar novas perspectivas; ter amor-próprio e valorizar a própria vida; deve-se mudar o paradigma, fazer autocrítica, perdoar o passado.",
+                "Atributo básico": "• Material: impossibilidade em realizar ou solucionar qualquer assunto; obstáculo intransponível e dificuldade em longo prazo; inércia, estagnação, lassidão; dependência inexorável de terceiros, toda situação é equivocada e sem saída.<br>• Mental: busca da perfeição moral, rigidez de opinião; utopia ou obsessão pelos próprios ideais, imaturidade, indecisão; saudosismo, escravo do passado, possível depressão; sem expressão verbal, comunicação lamentosa, lúgubre ou negativa.<br>• Sentimental: amargura ou sofrimento por um amor não alimentado; dependência afetiva, falta de amor-próprio, ressentimento; agonia, insatisfação, infelicidade, culpa; amor platônico, falta de autoestima. Para solteiros: passado que não se esquece; para casados: amor subordinado e sofrido pelo parceiro.<br>• Espiritual: renúncia aos valores materiais; resignação e abnegação diante daquilo que gostaria de possuir; devoção, meditação, busca espiritual por culpa material e/ou sentimental; fé como solução próspera da vida terrena.",
+                "Atributo diverso": "• Negativo/invertido: êxito e sucesso nos projetos materiais; sacrifício e abnegação que darão certo, pois, milagres acontecem, devendo-se manter a eterna esperança; impaciência, intolerância e incapacidade em atingir a serenidade com as pessoas.<br>• Obstáculo/oposição: falta de paciência, de compreender os mistérios da vida ou os obstáculos impostos pelo destino; ansiedade que levará ao fracasso; impossibilidade de manter os ideais e projetos de vida; falta de fé, esperança ou espiritualidade.<br>• Orientação/conselho: deve-se manter calado e distante de todos os problemas; não se envolver diretamente em nada; buscar a transcendência e compreender os ritmos da vida; meditar, orar, refletir, mas não tomar atitude alguma; ter calma e fé."
+            }},
+            { name: "A Morte", type: "maior", number: "XIII", imgUrl: `${baseUrl}13%20Death.jpg`, sections: {
+                "Núcleo": "• Essência: modificar, alterar, terminar, transformar.<br>• Definição: período extremamente difícil com drásticas mudanças gerenciadas pelo próprio consulente; desprendimento para se livrar do passado, embora ainda possa sofrer; esforços para abertura de novos caminhos, transição, renovação.<br>• Advertência: ser mais calmo e condescendente com o meio social; não discutir ou argumentar em demasia o próprio ponto de vista (mas seguir em frente); procurar o senso comum para alcançar aos objetivos; ser amável, mas ter pulso firme.",
+                "Atributo básico": "• Material: mudança desejada, alteração/ação bem planejada; realização difícil, mas proveitosa; retomada do poder pela transformação de hábito; solução de problemas e de obstáculos; abertura de caminhos, recomeço com prenúncio da prosperidade.<br>• Mental: discernimento e lucidez diante de limitações; determinação, análise racional e lógica para vencer; ruptura ou reorganização de planos antigos; expressão ríspida com criticidade exasperada; fala por vezes rude, mas sincera.<br>• Sentimental: desconforto emocional, melancolia ou mágoa de problemas quase insolúveis; rancor, pessimismo ou raiva do passado afetivo; falta de perdão das experiências vividas; afastamento ou dispersão, mas indica reequilíbrio futuro.<br>• Espiritual: busca da verdade espiritual perante sérias dificuldades materiais; medo ou hesitação diante de novidades espirituais (deseja acreditar); por vezes, algum ceticismo ou falta de fé pelas dificuldades enfrentadas no passado.",
+                "Atributo diverso": "• Negativo/invertido: imobilidade ou estagnação; inércia nas atitudes ou sem solução aparente; insucesso e fracasso gerando prejuízos; passividade ou preguiça diante de obstáculos; incapacidade em desfrutar ganhos; medo, receio em se expor.<br>• Obstáculo/oposição: falta de poder para gerenciar mudanças; não consegue resolver problemas cruciais, sem perspectiva aparente, o que gera indecisão, hesitação; possessivo, não se desprende de nada, não sabe renovar, retenção.<br>• Orientação/conselho: mudar o paradigma, eliminando os obstáculos o mais rápido possível; não temer o futuro, nem as pessoas, fazer todas as mudanças necessárias, refazer o futuro; a transformação é a única solução para o sucesso e o bem-estar."
+            }},
+            { name: "A Temperança", type: "maior", number: "XIV", imgUrl: `${baseUrl}14%20Temperance.jpg`, sections: {
+                "Núcleo": "• Essência: conciliar, harmonizar, renovar, esperar.<br>• Definição: longevidade, adaptação e serenidade são a marca desse arcano; nada é fácil ou realizador no presente, mas solucionável e conclusivo ao longo do tempo; adiamentos e suspensões das atividades, mas com garantia de sucesso bem adiante.<br>• Advertência: manter os ideais até o fim, não desistir dos projetos, mesmo que deseje suspendê-los; a felicidade é viável, mas vem em longo prazo; paciência e ponderação devem ser o lema; desejando desistir, em nada afetará a vida (bom!).",
+                "Atributo básico": "• Material: lentidão na realização dos projetos; burocracia e intempéries atrasam os resultados; conciliação e trégua que geram harmonia momentânea; negociação e acordo que resultam em longo prazo; parcimônia, intercâmbio, renovação.<br>• Mental: paciência, bons pensamentos e ideias perfeitas; adaptação e flexibilidade; planejamento e reflexão excessiva; ponderação e análise demasiada, mas sem definição própria; expressão moderada e comunicação reservada, fala pouco de si.<br>• Sentimental: tranquilidade ou tédio nas relações afetivas, mas desejaria mais alegria ou libido; calmaria ou preguiça em expressar o amor; momento enfadonho, sem perspectivas em curto prazo; grande amizade ou cumplicidade envolvida.<br>• Espiritual: forte proteção cármica para que ninguém possa interferir na evolução; cura e regeneração da alma; revelação benéfica do movimento do destino; mediunidade bem canalizada; libertação e purificação das energias negativas.",
+                "Atributo diverso": "• Negativo/invertido: precipitação e inabilidade nos acordos; realização imediata, mas com prejuízo; discórdia, desunião e hostilidade nas relações; impaciência e negligência nas atitudes; instabilidade, frivolidade ou volubilidade afetiva.<br>• Obstáculo/oposição: falta de reflexão e acordo que gera conflitos; cuidado com a ansiedade, pois falta serenidade para enfrentar os obstáculos; dificuldade para entender os problemas à volta; desejo de renovação e mudança sem necessidade.<br>• Orientação/conselho: deve-se ser moderado e aceitar os limites do tempo; ter paciência e buscar harmonia entre todos; espere com serenidade e será vitorioso; não é o melhor momento para discutir os direitos, ser indócil ou inconformado."
+            }},
+            { name: "O Diabo", type: "maior", number: "XV", imgUrl: `${baseUrl}15%20Devil.jpg`, sections: {
+                "Núcleo": "• Essência: desejar, possuir, construir, ter.<br>• Definição: pode-se tudo nesse momento, a sorte está a favor do consulente; lucros, status e influência estão fortalecidos; deve-se aproveitar o máximo (se desejar), mas necessita se precaver da compulsão material; obsessão por algum objeto.<br>• Advertência: moderar a ambição e os desejos de poder absoluto; refletir sobre as consequências dos atos; aceitar os limites como forma de prevenção de perdas futuras; ser comedido, pois mesmo realizando, não atingirá o suposto prazer.",
+                "Atributo básico": "• Material: domínio e êxito em qualquer plano, entretanto, não haverá a suposta satisfação; apego e força incontroláveis sobre terceiros; ambição de equiparar-se a um status mais elevado, contudo, efêmero; sucesso importante, mas passageiro.<br>• Mental: inteligência perspicaz e criativa; sagacidade e ardileza como tônica nos planos; determinação e obsessão em concluir os objetivos; cobiça e visão unilateral; expressão forte, doce e eloquente, retórica dinâmica e envolvente.<br>• Sentimental: paixão visceral, desejo forte ou impulso incontrolável (para casados); hedonismo, devassidão, sedução, impulsividade ou arrojo afetivo-sexual (para solteiros); dependência afetiva que gera posse e dominação do parceiro.<br>• Espiritual: displicência mediúnica, mas forte condição astral para fazer magia; poder do ego que aumenta a sombra da vaidade; força magnética que realiza os desejos; busca de recursos que ajudem a conclusões materiais e afetivas.",
+                "Atributo diverso": "• Negativo/invertido: fracasso e desilusão como obstáculo; lassidão e desinteresse pela conclusão; impotência física, moral ou espiritual; libertação do ego, orgulho ou vaidade, mas ainda sem parâmetro futuro; ingenuidade e submissão.<br>• Obstáculo/oposição: falta de esforço ou desejo para atingir os objetivos; sem impulso aparente para chegar ao final; os valores materiais dificilmente se estabeleceram; a vida não está a contento, falta paixão e impulso pela situação.<br>• Orientação/conselho: ser mais audacioso e destemido nas questões; buscar o prazer pessoal, pensando mais em si e no próprio futuro; momento de egoísmo para se chegar onde deseja; olhar suas próprias necessidades, não as dos outros."
+            }},
+            { name: "A Torre", type: "maior", number: "XVI", imgUrl: `${baseUrl}16%20Tower.jpg`, sections: {
+                "Núcleo": "• Essência: dissolver, libertar, romper, revolucionar.<br>• Definição: mudanças irreversíveis que causam insatisfação ou dor (tudo causado pelo consulente); ruína, prejuízo, infortúnio ou tristeza; desejo (inútil) em retomar o passado; rompimento de velhas crenças ou mudança inesperada de opinião.<br>• Advertência: o melhor caminho é aceitar as mudanças, buscando alternativas; perdoar a todos mesmo quando tiver razão ou acredite ser injusto. Sempre digo para as pessoas que estão nesse arcano: viver no passado é perder o futuro.",
+                "Atributo básico": "• Material: mudança indesejada ou perda de situação importante; qualquer alteração ou realização se faz com prejuízos; dívidas geradas por precipitação; negação, infortúnio, dificuldade ou suspensão inesperada, causando desequilíbrio no status.<br>• Mental: confusão e desordem; irracionalidade e desestabilização; falta de visão no futuro pelas dificuldades recentes; ilusão ou obsessão em solucionar coisas impossíveis; expressão desordenada; comunicação e fala agressiva, discussão.<br>• Sentimental: desilusão e medo do futuro; dor, rancor, decepção ou orgulho ferido que podem gerar vingança; amor não correspondido; sensação de abandono, carência afetiva-sexual; colapso emocional, desesperança, autocompaixão.<br>• Espiritual: desorientação religiosa ou crença irredutível das próprias convicções; busca de um caminho milagroso; falta de perspectiva em um mundo melhor; necessidade de satisfação de poder mágico para afirmar superioridade.",
+                "Atributo diverso": "• Negativo/invertido: acordos que resultam em favorecimentos; sucesso inesperado e ganhos importantes; retorno de situações ou pessoas do passado, apesar de não sugerir felicidade; impossibilidade de mudança imediata ou de alteração do status.<br>• Obstáculo/oposição: falta de postura diante da opinião alheia; inconformismo com os reveses da vida; mudanças constantes que fazem parte da rotina; confrontos periódicos que devem ser evitados; falta de perspectiva futura, medo de perder.<br>• Orientação/conselho: mudar urgentemente o modo de pensar e de agir; perdoar e romper com situações que causam sofrimento ou discórdia; não temer o futuro ou desagradar pessoas à volta; a transformação é a única forma de sucesso."
+            }},
+            { name: "A Estrela", type: "maior", number: "XVII", imgUrl: `${baseUrl}17%20Star.jpg`, sections: {
+                "Núcleo": "• Essência: esperançar, crer, continuar, libertar.<br>• Definição: tranquilidade e serenidade dão o tom da situação; momento ímpar de harmonia em meio ou após algum período turbulento; sucesso e realização confirmados em curto prazo; caminhos abertos, paz e esperança estão no destino.<br>• Advertência: avançar sem medo e não ficar parado; realizar tudo aquilo que planejou, pois todos os caminhos estão abertos; seguir em frente com toda esperança de uma conclusão benéfica; crer no futuro, ter autoconfiança e muita fé.",
+                "Atributo básico": "• Material: realização próspera em curto prazo; oportunidade e sorte abrindo caminhos diversos; crescimento e favorecimento nos projetos; revelação ou descobertas que beneficiam o futuro; plenitude ou satisfação com os resultados.<br>• Mental: discernimento e idealismo regem os planos; busca e inspiração da ideia perfeita; deseja ser prático, mas não consegue; convicção de um destino perfeito diante de um presente dúbio; expressão clara, comunicação fraterna e fala sincera.<br>• Sentimental: otimismo e esperança em um mundo melhor; paz interior e autoconfiança; plenitude afetiva e prazeres em harmonia; favorável à alegria e à felicidade. Para solteiros: amizade e confiança; para casados: fidelidade e afeto.<br>• Espiritual: esperança e fé verdadeira; forte intuição e canalização de mensagens do astral; meditação e força mágica; proteção de seres de luz; forte couraça contra energias negativas; bom para orar, meditar e construir formas-pensamentos.",
+                "Atributo diverso": "• Negativo/invertido: desapontamento e má sorte integram o caminho; empecilhos que se levantam; instabilidade e incertezas do futuro; ansiedade e desconfiança de todos; negligência e teimosia desequilibram a vida; perdas, fracasso e inglórias.<br>• Obstáculo/oposição: falta de sorte impera na situação; forte negatividade ou falta de confiança de terceiros; tendência a caminhos fechados ou ausência de amigos e familiares; falta de fé, dificuldade em solucionar coisas simples, incerteza.<br>• Orientação/conselho: ter esperança diante de tamanha descrença é a única forma de atingir a paz interior; deve confiar na vida, buscar a autoestima e o amor-próprio como forma de solução imediata dos problemas; a fé remove obstáculos."
+            }},
+            { name: "A Lua", type: "maior", number: "XVIII", imgUrl: `${baseUrl}18%20Moon.jpg`, sections: {
+                "Núcleo": "• Essência: autoconhecer, assimilar, discernir, perceber.<br>• Definição: crise existencial, confronto entre o passado e o presente; problemas causados pelo próprio consulente, sendo urgente separar o mundo material do mental e, este, do sentimental, como melhor opção para o progresso; vantagens.<br>• Advertência: ter muito cuidado com a imaginação ou a ansiedade, buscar o máximo de lucidez possível em todas as situações; ponderar, conversar e se aconselhar com todos à volta; ter calma e serenidade a cada passo, a cada decisão.",
+                "Atributo básico": "• Material: prosperidade e crescimento se instalam; abundância e fecundidade nos projetos; oportunidade e popularidade resultam em sorte e benesses; boas notícias ou revelações que trazem equilíbrio; avanço para o sucesso; férias, festas, viagens.<br>• Mental: devaneio, ilusão e confusão que geram hesitações e engano; plano real e imaginário se mesclando; superficialidade ou falta de clareza nos projetos; expressão eloquente, comunicação imprecisa, fala agitada e possível discussão.<br>• Sentimental: paixão e sedução marcam o período; ciúme e dependência afetiva que geram angústia e desarmonia; inconformismo com a rotina e desejo de ser amado profundamente; sonho e romantismo que causam medo do abandono ou aflição.<br>• Espiritual: premonição e intuição forte; abertura mediúnica, poder mágico, força meditativa e oratória que devem ser usadas em benefício próprio; o plano astral influencia de todas as formas, desde energias negativas até as positivas.",
+                "Atributo diverso": "• Negativo/invertido: dificuldade em realizar projetos; infertilidade, prejuízo, perdas ou obstáculo material; ausência de flexibilidade e acordos, pois há obsessão, ideia fixa ou razão que dificulta o progresso; egoísmo, opressão ou vaidade exacerbada.<br>• Obstáculo/oposição: falta de análise ou observação da própria experiência de vida; benefícios são ofertados, mas não são aceitos por falta de confiança ou de autoestima; falta de prosperidade ou de fertilidade, cuidado com a animosidade.<br>• Orientação/conselho: buscar o autoconhecimento e o equilíbrio interior; evitar o confronto de opiniões, pois será improdutivo; estimular o amor-próprio e a autoestima como solução imediata dos problemas; acreditar em um futuro melhor."
+            }},
+            { name: "O Sol", type: "maior", number: "XIX", imgUrl: `${baseUrl}19%20Sun.jpg`, sections: {
+                "Núcleo": "• Essência: realizar, desfrutar, regozijar, progredir.<br>• Definição: resultados desejados, prazer, alegria, felicidade; período de sorte em que todos os projetos são possíveis de realização e sucesso; encontros amistosos e acordos afortunados; proteção e ajuda na abertura de caminhos; luz e verdade.<br>• Advertência: não mudar nada, tudo está correto e perfeito, continue com os projetos ou a ação; serenidade é o caminho do sucesso, pois, nesse momento, a busca da perfeição poderá atrasar algo que já se encontra com esmero e beleza.",
+                "Atributo básico": "• Material: êxito, sucesso e realização próspera; promoção, lucros ou ganhos inesperados; progresso contínuo além do imaginado; união e sociedade perfeita; equilíbrio em todos os planos concretos ou nas finanças; tudo é favorável, sorte.<br>• Mental: consciência e clareza que ajudam em um planejamento estruturado; objetividade e confiança no presente; inteligência aguçada e certeza dos objetivos; novos estudos; expressão harmoniosa, comunicação verdadeira e fala dócil.<br>• Sentimental: alegria, cordialidade, afeto e carisma refletem o momento; altruísmo, magnanimidade, harmonia e cumplicidade nas relações; satisfação e entusiasmo na busca do amor (solteiros); amor profundo e encontro da felicidade (casados).<br>• Espiritual: evolução e iluminação trazem compreensão e organização do caos; fé verdadeira e espiritualidade incondicional que abrem todos os caminhos; poder astral de cura e revitalização; forte mediunidade, intuição e canalização.",
+                "Atributo diverso": "• Negativo/invertido: ilusão, engodo e infelicidade permeiam a situação; adiamento, prejuízo ou obstáculo de difícil solução; período de má sorte e inúmeros reveses; falsas promessas, solidão e angústia acenam para breve; desamor, negativismo.<br>• Obstáculo/oposição: falta de clareza do que se pretende; dificuldades que se repetem ou se alternam com o sucesso; falta de otimismo e crença no futuro; cuidado com blefes ou negligência nos relacionamentos, contratos e acordos.<br>• Orientação/conselho: ser mais otimista e se harmonizar com o meio ambiente, evitar a reclusão, o negativismo ou o medo de se relacionar; aceitar a ajuda dos outros, não ser autossuficiente, nem autoritário; acreditar em um futuro melhor, ter fé."
+            }},
+            { name: "O Julgamento", type: "maior", number: "XX", imgUrl: `${baseUrl}20%20Judgement.jpg`, sections: {
+                "Núcleo": "• Essência: transcender, desvelar, regenerar, curar.<br>• Definição: renascimento, mudanças inesperadas, o destino abre portas benéficas; a conduta deve ser a mais correta possível para se atingir o êxito, mesmo que por caminhos inusitados; todos os obstáculos e problemas serão solucionados.<br>• Advertência: aceitar as mudanças que se apresentam, o destino acena com positividade; ser flexível e buscar a reciprocidade; comungar com o novo, deixando o passado de lado; abrir os braços para o futuro, não pensar no passado.",
+                "Atributo básico": "• Material: novidade, surpresa e mudança abrem caminhos para uma nova era; proposta inusitada que surgirá em breve, inovação, melhoria; desenvolvimento, promoção e oferta não planejada; descoberta de uma nova vida; cura, solução.<br>• Mental: criatividade, ponderação do futuro, descoberta de novas habilidades; intelectualidade e meticulosidade marcam as ideias; perspectiva e planejamento renovados; expressão metódica, comunicação crítica, mas construtiva; fala sucinta.<br>• Sentimental: renovação do afeto e da libido; perdão, transcendência, reabilitação do amor; disposição, vontade e novos sentimentos positivos que emergem após período turbulento ou sem perspectiva de retomar a vida afetiva; autocura, paz.<br>• Espiritual: compreensão dos desígnios divinos; iluminação e fé marcam um novo período de crenças; libertação de dogmas e doutrinas ultrapassadas; experiência oracular, visão ou percepção profética; contato com seres espirituais, mediunidade.",
+                "Atributo diverso": "• Negativo/invertido: oposição do destino, nada se resolverá; dúvida, adiamento, insucesso ou infelicidade nas realizações; dificuldade em encontrar ajuda correta; azar, desproteção, inimigos fortes, inveja; falsidade, fofoca e ilusão com amigos.<br>• Obstáculo/oposição: falta de oportunidade, de sorte ou ajuda de terceiros; falha de imaginação e criatividade; ausência de fé e de esperança no futuro; cuidado com o pessimismo, pois atrapalhará o desenvolvimento; falta de experiência ou atenção.<br>• Orientação/conselho: perdoar, transcender e seguir adiante é o melhor caminho para a paz interior; reavaliar as atitudes, ser flexível e compreender os obstáculos; chegou o momento de renovar os objetivos, de ter esperanças em uma nova vida."
+            }},
+            { name: "O Mundo", type: "maior", number: "XXI", imgUrl: `${baseUrl}21%20World.jpg`, sections: {
+                "Núcleo": "• Essência: sintetizar, cumprir, facilitar, saciar.<br>• Definição: êxito e plenitude se encontram na trajetória das ações; obstáculos se dissolvem e tudo se realiza a contento; progresso além do esperado, momento de mudanças; controle sobre todos os problemas com vantagens e solução positiva.<br>• Advertência: continuar com as metas e planos pré-estabelecidos; não mudar ou adiar nada, seguir em frente com esperança; não se subjugar aos caprichos alheios; a autoconfiança e o amor-próprio devem dominar todas as ações e alterações.",
+                "Atributo básico": "• Material: conclusão com êxito final; sucesso e abertura de vida para todas as ações; crescimento e desenvolvimento além do esperado; acordo bem elaborado, lucro, escambo, triunfo; segurança em longo prazo, resultados satisfatórios.<br>• Mental: idealização e criatividade; análise construtiva com questionamentos do presente ou ponderações do passado; surgimento de novos planos e perspectivas positivas; expressão dinâmica, comunicação autêntica, fala objetiva e bem direta.<br>• Sentimental: sinceridade e afeição rumam para a felicidade; autoestima, amor-próprio; honestidade e integridade afetiva; amor ou admiração profunda, mas sem dependência; pouco romantismo, autossuficiência e tendência ao narcisismo.<br>• Espiritual: percepção extrassensorial ou forte mediunidade; meditação ou oração como fonte de evolução e iluminação; canalização com plano astral, boa intuição e telecinesia; proteção contra formas-pensamentos negativas, magia e feitiçaria.",
+                "Atributo diverso": "• Negativo/invertido: desatenção e negligência apontam fracasso, humilhação ou insucesso inevitável; incapacidade e desânimo em administrar obstáculos; dano, prejuízo ou perda irreparável; autocomiseração, autodestruição, autofobia.<br>• Obstáculo/oposição: falta de atenção ou descuido com o planejamento inicial ou com o acordo efetuado; obstáculos causados por falsos amigos ou pessoas invejosas, mas que podem ser superados com perseverança e autoconfiança.<br>• Orientação/conselho: momento de investir na própria independência (seja material ou emocional); valorizar os próprios desejos ou realizar os objetivos sem se importar com os outros; ter mais ambição, mais lazer e mais foco na vida pessoal."
+            }},
+            
+            // ==========================================
+            // ARCANOS MENORES - COPAS (C)
+            // ==========================================
+            { name: "Ás de Copas", type: "menor", number: "As", imgUrl: `${baseUrl}C01.jpg`, sections: {
+                "Núcleo": "• Essência: Potência de amor, transbordamento emocional, alegria e início de conexões genuínas.<br>• Definição: É a força da nutrição e da reconciliação; responde SIM a tudo e realiza com felicidade e abundância.<br>• Advertência: sendo um jorro de energia, precisa ser acolhido e direcionado para não ficar apenas na euforia abstrata.",
+                "Atributo básico": "• Material: Sorte, fartura, apoio social, cura e fertilidade em negócios ou projetos artísticos.<br>• Mental: Receptividade a novas ideias, otimismo, empatia e disposição para perdoar.<br>• Sentimental: Paixão sincera, amor transbordante, harmonia interior/exterior e vontade de criar elos.<br>• Espiritual: Restauração da alma, cura espiritual e profundo sentimento de autorrealização.",
+                "Atributo diverso": "• Obstáculo/oposição: Não há; conta com amplo apoio do ambiente social.<br>• Orientação/conselho: Dê o primeiro passo, seja generoso, abra o coração, perdoe, peça ajuda se precisar e invista no afeto."
+            }},
+            { name: "Dois de Copas", type: "menor", number: "2", imgUrl: `${baseUrl}C02.jpg`, sections: {
+                "Núcleo": "• Essência: Reciprocidade, parceria, acordos suaves e troca equilibrada.<br>• Definição: Encontro de duas forças de igual intensidade que se alinham para uma proposta comum, seja de união ou término pacífico.<br>• Advertência: embora traga um ótimo ambiente para negociação, a força de realização precisa ser nutrida para manter a estabilidade a longo prazo.",
+                "Atributo básico": "• Material: Boas sociedades, contratos de permuta, colaboração profissional e suporte mútuo.<br>• Mental: Comunicação fluida, abertura para entender o outro e disposições conciliatórias.<br>• Sentimental: Atração mútua, flerte, renegociação de votos e amizades com carinho e sinceridade.<br>• Espiritual: Equilíbrio das energias vitais e momento propício para fertilidade e cura.",
+                "Atributo diverso": "• Obstáculo/oposição: Oportunidades que exigem compromisso com o outro de forma direta.<br>• Orientação/conselho: Aceite a proposta, seja honesto, cumpra o prometido, seja afável e comprometa-se."
+            }},
+            { name: "Três de Copas", type: "menor", number: "3", imgUrl: `${baseUrl}C03.jpg`, sections: {
+                "Núcleo": "• Essência: Celebração, júbilo, amizade, abundância e alívio das tensões.<br>• Definição: É a festa da colheita e da vitória; comemoração por um objetivo alcançado em conjunto ou nascimento de algo belo.<br>• Advertência: cuidado com o excesso de despreocupação ou a entrada de terceiras pessoas na intimidade.",
+                "Atributo básico": "• Material: Promoções, aprovação em exames, ganhos financeiros e fartura compartilhada.<br>• Mental: Sensação de leveza, receptividade social e otimismo contagiante.<br>• Sentimental: Encontros festivos, alegria compartilhada, comemorações afetivas e fertilidade (gravidez).<br>• Espiritual: Purificação através do riso, da união fraternal e da reconciliação com a vida.",
+                "Atributo diverso": "• Negativo/invertido: pode indicar interferência de terceiros (triângulos) a depender de cartas vizinhas como Diabo ou Lua.<br>• Obstáculo/oposição: Dispersão da energia produtiva pelo excesso de festas e lazer.<br>• Orientação/conselho: Comemore, aceite os convites, brinde com seus aliados e aproveite o momento de alegria."
+            }},
+            { name: "Quatro de Copas", type: "menor", number: "4", imgUrl: `${baseUrl}C04.jpg`, sections: {
+                "Núcleo": "• Essência: Tédio, insatisfação, apatia, ranzinza e desinteresse pelas ofertas da vida.<br>• Definição: Ressaca emocional após o ápice do Três de Copas; a pessoa rejeita novas oportunidades por estar fixada em expectativas irrealistas.<br>• Advertência: o descontentamento aqui é uma fantasia: a pessoa reclama de barriga cheia e não valoriza o que possui.",
+                "Atributo básico": "• Material: Boas propostas de trabalho ou investimentos ignorados por puro desânimo ou birra.<br>• Mental: Mau humor, hiperfoco na vida alheia (inveja de redes sociais), mau-olhado e ranzinzice.<br>• Sentimental: Desencanto afetivo, tédio na relação, ciúmes bobos e sensação amarga de que a magia acabou.<br>• Espiritual: Energeticamente denso; ambiente viciado ou estagnado, propenso à apatia espiritual.",
+                "Atributo diverso": "• Obstáculo/oposição: Acomodação em uma postura de protesto infantil e recusa de ajuda.<br>• Orientação/conselho: Pare, reflita sobre sua ingratidão, desconfie de promessas mirabolantes e recupere o bom senso."
+            }},
+            { name: "Cinco de Copas", type: "menor", number: "5", imgUrl: `${baseUrl}C05.jpg`, sections: {
+                "Núcleo": "• Essência: Lamentação, vitimismo, remorso e luto por expectativas quebradas.<br>• Definição: O olhar fixo nas perdas (as três taças caídas) impede a pessoa de enxergar o recurso e o afeto que ainda restam (as duas taças de pé).<br>• Advertência: a dor da perda é real, mas perpetuá-la é uma escolha do consulente por falta de maturidade.",
+                "Atributo básico": "• Material: Fracasso parcial em projetos por falta de cuidado prévio; prejuízos financeiros contornáveis.<br>• Mental: Remorso, amargura, culpa e foco exclusivo no que deu errado.<br>• Sentimental: Desilusão amorosa, término de namoro carregado de mágoas e drama vitimista.<br>• Espiritual: Desgosto que se reflete em doenças psicossomáticas (psoríase, taquicardia ou tristeza profunda).",
+                "Atributo diverso": "• Obstáculo/oposição: Incapacidade temporária de virar as costas para o passado e reconstruir.<br>• Orientação/conselho: Pare de chorar sobre o leite derramado, vire-se para trás, olhe o que sobrou de pé e busque conselho profissional."
+            }},
+            { name: "Seis de Copas", type: "menor", number: "6", imgUrl: `${baseUrl}C06.jpg`, sections: {
+                "Núcleo": "• Essência: Nostalgia, saudade, regresso ao passado e apego às velhas lembranças.<br>• Definição: O passado se faz presente através do retorno de pessoas antigas (ex-parceiros) ou do desejo de conservar modelos tradicionais.<br>• Advertência: usar a nostalgia como escapismo pode paralisar a evolução e gerar intolerância com o novo.",
+                "Atributo básico": "• Material: Heranças familiares, resgate de negócios antigos ou ajuda vinda de velhos conhecidos.<br>• Mental: Pensamento conservador, apego às tradições e recusa em adotar métodos modernos.<br>• Sentimental: Sentimentos puros e gentis, porém conservadores; saudades de como a relação era no início.<br>• Espiritual: Conexão com ancestrais e proteção espiritual trazida por boas lembranças e inocência.",
+                "Atributo diverso": "• Obstáculo/oposição: Adiamentos provocados pela relutância em aceitar a evolução natural do tempo.<br>• Orientação/conselho: Faça o luto do que passou, acolha o próximo com solidariedade, mas não fique preso à saudade."
+            }},
+            { name: "Sete de Copas", type: "menor", number: "7", imgUrl: `${baseUrl}C07.jpg`, sections: {
+                "Núcleo": "• Essência: Deslumbramento, euforia ilusória, fantasias e falta de senso de limite.<br>• Definição: O consulente se embriaga com a autoimagem ou com falsas promessas, vivendo no terreno da utopia sem bases reais.<br>• Advertência: alerta para mentiras (inclusive autoenganos), vícios, traições e promessas que não serão cumpridas.",
+                "Atributo básico": "• Material: Negócios enganosos, compras por impulso e ilusão de riquezas que não se sustentam.<br>• Mental: Mente alucinada por excesso de otimismo irresponsável; arrogância baseada no passado (efeito “carteirada”).<br>• Sentimental: Traição por empolgação, atração por fantasias rasas e atitudes narcisistas com o parceiro.<br>• Espiritual: Fuga da realidade através de sedativos, substâncias, apostas ou misticismo alienante.",
+                "Atributo diverso": "• Obstáculo/oposição: Cegueira para com os perigos reais da vida por se achar inatingível.<br>• Orientação/conselho: Divirta-se com moderação, mas baixe a bola, caia na realidade e não acredite em facilidades."
+            }},
+            { name: "Oito de Copas", type: "menor", number: "8", imgUrl: `${baseUrl}C08.jpg`, sections: {
+                "Núcleo": "• Essência: Abandono necessário, despedida forçada, reavaliação moral e busca por um novo caminho.<br>• Definição: Reconhecimento amargo de que a ilusão do Sete de Copas fracassou; a pessoa é forçada a deixar a situação com tristeza.<br>• Advertência: exige o abandono de comportamentos errados (como a infidelidade ou o desleixo) para não destruir totalmente a vida.",
+                "Atributo básico": "• Material: Demissões decorrentes de irresponsabilidade, abandono de tratamento médico ou quebra de compromissos.<br>• Mental: Sentimento de culpa, remorso verdadeiro e necessidade de reestruturação do caráter.<br>• Sentimental: Separações dolorosas, término por quebra de confiança e saída de cena por consciência dos erros.<br>• Espiritual: Fase de crise existencial que exige acompanhamento psiquiátrico ou terapêutico profundo.",
+                "Atributo diverso": "• Obstáculo/oposição: A dor de ter que abrir mão daquilo que se queria, mas que fazia mal.<br>• Orientação/conselho: Desista de insistir no erro, renuncie, jogue limpo com você mesmo e busque outra direção."
+            }},
+            { name: "Nove de Copas", type: "menor", number: "9", imgUrl: `${baseUrl}C09.jpg`, sections: {
+                "Núcleo": "• Essência: Satisfação, felicidade, reconciliação, bem-estar e generosidade.<br>• Definição: Carta da boa vida e da conquista merecida; o consulente assume seus erros do passado e restaura a alegria e a harmonia.<br>• Advertência: tendência aos excessos sensoriais (comilança e bebedeira) pelo desejo de celebrar a vida.",
+                "Atributo básico": "• Material: Sucesso em negócios, fartura de recursos, promoções e ambiente propício para celebrações.<br>• Mental: Bom humor, lealdade, concordância com a verdade e facilidade para firmar acordos.<br>• Sentimental: Relacionamentos prazerosos, encontros em torno da mesa, alegria de viver a dois e fraternidade.<br>• Espiritual: Sensação de plenitude, dignidade restaurada e otimismo renovado.",
+                "Atributo diverso": "• Obstáculo/oposição: Pouco ou nenhum; as portas estão abertas para quem age com dignidade.<br>• Orientação/conselho: Divirta-se, seja franco, abra-se para as trocas, mostre generosidade e curta suas vitórias."
+            }},
+            { name: "Dez de Copas", type: "menor", number: "10", imgUrl: `${baseUrl}C10.jpg`, sections: {
+                "Núcleo": "• Essência: Plenitude afetiva, união familiar, felicidade duradoura e laços sinceros.<br>• Definição: Apogeu do naipe de Copas; construção de vínculos emocionais profundos.",
+                "Atributo básico": "• Material: Sucesso seguro, casamentos felizes, sociedades harmoniosas.<br>• Mental: Paz de espírito, visão integrada do ambiente.<br>• Sentimental: Amor correspondido, harmonia no relacionamento.<br>• Espiritual: Alinhamento de valores com o entorno."
+            }},
+            { name: "Pajem de Copas", type: "menor", number: "Pajem", imgUrl: `${baseUrl}CC1P.jpg`, sections: {
+                "Núcleo": "• Essência: Inocência, doçura, boas notícias, gentileza e sensibilidade.<br>• Definição: Início de um encantamento ou proposta romântica/artística genuína.",
+                "Atributo básico": "• Material: Notícias de nascimentos, convites para festas.<br>• Mental: Criatividade fluida, gentileza verbal.<br>• Sentimental: Declarações fofas, início de namoro.<br>• Espiritual: Sensibilidade psíquica, pureza de intenções."
+            }},
+            { name: "Cavaleiro de Copas", type: "menor", number: "Cavaleiro", imgUrl: `${baseUrl}CC2K.jpg`, sections: {
+                "Núcleo": "• Essência: Charmoso, sedutor, romântico, porem inconstante e deslumbrado.<br>• Definição: O galã das promessas bonitas que se empolga com a fase da conquista.",
+                "Atributo básico": "• Material: Negócios romantizados que não se sustentam.<br>• Mental: Mente poética, frívola.<br>• Sentimental: Paixões avassaladoras de curta duração.<br>• Espiritual: Busca por prazeres sensoriais fantasiados."
+            }},
+            { name: "Rainha de Copas", type: "menor", number: "Rainha", imgUrl: `${baseUrl}CC3Q.jpg`, sections: {
+                "Núcleo": "• Essência: Intuição, acolhimento, empatia, reserva afetiva e romantização.<br>• Definição: Figura carismática e fofa, politicamente correta, que sufoca os próprios sentimentos.",
+                "Atributo básico": "• Material: Trabalhos ligados à cura, proteção dos necessitados.<br>• Mental: Intuição refinada, imaginação fértil.<br>• Sentimental: Expectativa de conto de fadas, timidez para se declarar.<br>• Espiritual: Fortíssima mediunidade, dom de cura."
+            }},
+            { name: "Rei de Copas", type: "menor", number: "Rei", imgUrl: `${baseUrl}CC4K.jpg`, sections: {
+                "Núcleo": "• Essência: Hedonismo, diplomacia, busca pelo prazer próprio, carisma.<br>• Definição: O negociador sedutor que usa sua gentileza e traquejo social.",
+                "Atributo básico": "• Material: Sucesso através da diplomacia, artes, mediação de conflitos.<br>• Mental: Mente romântica, articulada, manipuladora pelo afeto.<br>• Sentimental: Parceiro carinhoso enquanto for bajulado.<br>• Espiritual: Intuição profunda, sabedoria emotiva."
+            }},
+
+            // ==========================================
+            // ARCANOS MENORES - PAUS (W)
+            // ==========================================
+            { name: "Ás de Paus", type: "menor", number: "As", imgUrl: `${baseUrl}W01.jpg`, sections: {
+                "Núcleo": "• Essência: Explosão de vida, entusiasmo, poder criativo.<br>• Definição: Concentra a energia de todo o naipe; é a centelha divina.",
+                "Atributo básico": "• Material: Ganhos por meritocracia, crescimento.<br>• Mental: Inspiração rápida, determinação inabalável.<br>• Sentimental: Paixão avassaladora, forte atração sexual.<br>• Espiritual: Purificação pelo fogo, força vital renovada."
+            }},
+            { name: "Dois de Paus", type: "menor", number: "2", imgUrl: `${baseUrl}W02.jpg`, sections: {
+                "Núcleo": "• Essência: Empacado, hesitação no avanço, adiamento por imprevistos e reavaliação de rota.<br>• Definição: O consulente conquistou o impulso inicial (Ás), mas travou no meio do caminho, em dúvida entre manter o seguro ou desbravar o novo.<br>• Advertência: postura de isentão que atrasa os resultados por medo de se arriscar em águas desconhecidas.",
+                "Atributo básico": "• Material: Atrasos em contratos por falha de terceiros, negócios parados temporariamente para ajustes necessários.<br>• Mental: Dilema reflexivo (vale a pena trocar o certo pelo duvidoso?), desinteresse temporário e estresse.<br>• Sentimental: Relação em banho-maria; a pessoa não termina, mas também não dá um passo à frente no compromisso.<br>• Espiritual: Pausa forçada para alinhar o ego com os propósitos mais elevados.",
+                "Atributo diverso": "• Obstáculo/oposição: Imprevistos passageiros causados por decisões de terceiros.<br>• Orientação/conselho: Pare, revise os planos, espere o momento certo e evite assumir lados sem convicção."
+            }},
+            { name: "Três de Paus", type: "menor", number: "3", imgUrl: `${baseUrl}W03.jpg`, sections: {
+                "Núcleo": "• Essência: Visão de futuro, expansão de horizontes, exploração de novos territórios e planejamento executado.<br>• Definição: O consulente deixou a hesitação para trás e colocou seus navios ao mar; início de uma longa jornada de sucesso.<br>• Advertência: o sucesso virá, mas é uma conquista a longo prazo que exige trabalho contínuo.",
+                "Atributo básico": "• Material: Comércio internacional, viagens, expansão de negócios, intercâmbio e bases sólidas para o futuro.<br>• Mental: Mente aberta, otimismo focado, capacidade de negociação e perdão das amarguras passadas.<br>• Sentimental: Projetos a dois a longo prazo, pedidos de namoro/casamento com foco no futuro e superação de dores.<br>• Espiritual: Alinhamento da jornada pessoal com a expansão da consciência e abertura de caminhos.",
+                "Atributo diverso": "• Obstáculo/oposição: Necessidade de atravessar a fase de espera enquanto os resultados navegam de volta.<br>• Orientação/conselho: Olhe para o horizonte, inove, crie parcerias, viaje e movimente-se com pragmatismo."
+            }},
+            { name: "Quatro de Paus", type: "menor", number: "4", imgUrl: `${baseUrl}W04.jpg`, sections: {
+                "Núcleo": "• Essência: Celebração, conquista de estabilidade, harmonia doméstica e alívio.<br>• Definição: Chegada a um porto seguro onde se pode comemorar os frutos do esforço com os seus pares.<br>• Advertência: momento de descanso merecido, mas que não deve se tornar acomodação permanente antes das próximas fases.",
+                "Atributo básico": "• Material: Compra de imóveis, contratos seguros, festas de empresa, formatura e estabilidade financeira.<br>• Mental: Tranquilidade, paz de espírito, sentimento de acolhimento e otimismo.<br>• Sentimental: Casamentos, vida a dois harmoniosa, reencontro com amigos e receptividade no lar.<br>• Espiritual: Sensação de bênção, pertencimento e restauração de energias vitais.",
+                "Atributo diverso": "• Obstáculo/oposição: Pequenas contingências que precisam de gestão antes da festa.<br>• Orientação/conselho: Comemore, compartilhe sua alegria, viaje, seja paciente e curta a estabilidade alcançada."
+            }},
+            { name: "Cinco de Paus", type: "menor", number: "5", imgUrl: `${baseUrl}W05.jpg`, sections: {
+                "Núcleo": "• Essência: Competitividade, atritos triviais, discussões bobas e esforço desgastante.<br>• Definição: Único arcano ruim do naipe de Paus; batalhas egoicas onde todos têm armas iguais e ninguém quer dar o braço a torcer.<br>• Advertência: perda inútil de energia com picuinhas, pequenas irritações e falta de liderança clara.",
+                "Atributo básico": "• Material: Ambiente de trabalho altamente competitivo, burocracia chata e pequenos atrasos rotineiros.<br>• Mental: Mente focada em detalhes insignificantes para vencer a discussão (a cor da parede, quem lava a louça).<br>• Sentimental: Relação desgastada por DRs infinitas, implicâncias bobas e disputa pelo topo na relação.<br>• Espiritual: Desarmonia gerada por irritabilidade e estresse do cotidiano.",
+                "Atributo diverso": "• Obstáculo/oposição: Conflitos sem perdedores ou vencedores reais, apenas perda de tempo.<br>• Orientação/conselho: Arregace as mangas, encare o desafio profissional, mas evite desgastes com bobagens."
+            }},
+            { name: "Seis de Paus", type: "menor", number: "6", imgUrl: `${baseUrl}W06.jpg`, sections: {
+                "Núcleo": "• Essência: Vitória, reconhecimento público, vanglória pelo esforço e boas notícias.<br>• Definição: Triunfo após a tempestade do Cinco de Paus; o consulente é aclamado por seus méritos e conquistas.<br>• Advertência: a vitória é justa, porém pode gerar vaidade por pequenas conquistas do dia a dia.",
+                "Atributo básico": "• Material: Promoção no trabalho, bônus financeiro, aprovação em testes e alta hospitalar com festa.<br>• Mental: Autoconfiança elevada, otimismo, liderança carismática e sensação de dever cumprido.<br>• Sentimental: Orgulho do relacionamento, superação de crises a dois e admiração mútua.<br>• Espiritual: Elevação da autoestima psíquica através do reconhecimento dos próprios talentos.",
+                "Atributo diverso": "• Obstáculo/oposição: Inveja do entorno diante da exposição da vitória.<br>• Orientação/conselho: Mostre confiança, celebre o seu mérito, lidere com carisma e siga no foco do objetivo."
+            }},
+            { name: "Sete de Paus", type: "menor", number: "7", imgUrl: `${baseUrl}W07.jpg`, sections: {
+                "Núcleo": "• Essência: Defesa de posição, coragem solitária, esforço para manter o topo e resistência.<br>• Definição: O consulente conquistou o topo (no Seis de Paus), mas agora precisa lutar sozinho contra opositores invejosos para não perder a posição.<br>• Advertência: ataques diretos decorrentes de ciúmes ou concorrência; exige força mental firme.",
+                "Atributo básico": "• Material: Sobrecarga de trabalho para manter o status, defesa de patrimônio ou superação em exames concorridos.<br>• Mental: Foco total, disciplina, valentia e recusar-se a entregar os pontos.<br>• Sentimental: Luta diária para manter o relacionamento firme apesar das fofocas, palpites externos e crises.<br>• Espiritual: Combate psíquico contra energias de inveja, boicote ou demandas espirituais.",
+                "Atributo diverso": "• Obstáculo/oposição: Lutar sozinho contra múltiplos opositores ou boicotadores.<br>• Orientação/conselho: Lute, defenda suas posições sem medo, seja arrojado e não baixe a guarda."
+            }},
+            { name: "Oito de Paus", type: "menor", number: "8", imgUrl: `${baseUrl}W08.jpg`, sections: {
+                "Núcleo": "• Essência: Velocidade, resolução rápida, comunicação frenética e eventos inesperados.<br>• Definição: Único arcano kármico do naipe de Paus; destravanca processos travados de forma suave e surpreendente.<br>• Advertência: exige agilidade mental para acompanhar o ritmo acelerado dos acontecimentos.",
+                "Atributo básico": "• Material: Chegada rápida de notícias, documentos aprovados, contratos fechados por internet/WhatsApp e viagens de avião.<br>• Mental: Mente hiperativa, pronta para tomar decisões impulsivas certeiras.<br>• Sentimental: Paixões repentinas, declarações diretas, mensagens sem parar e fim de mal-entendidos.<br>• Espiritual: Alinhamento energético rápido, curas aceleradas e intuição certeira.",
+                "Atributo diverso": "• Negativo/invertido: anula as características mais pesadas ou lentas do Arcano Maior vizinho de forma suave.<br>• Obstáculo/oposição: Ansiedade se a mente não conseguir acompanhar a velocidade da vida.<br>• Orientação/conselho: Aja rápido, seja impulsivo no bom sentido, persevere e resolva pendências sem enrolar."
+            }},
+            { name: "Nove de Paus", type: "menor", number: "9", imgUrl: `${baseUrl}W09.jpg`, sections: {
+                "Núcleo": "• Essência: Defensiva, medo de repetir erros passados, cicatrizes antigas e cautela excessiva.<br>• Definição: O consulente está prestes a alcançar a vitória final, mas hesita porque revive traumaticamente as dores das batalhas anteriores.<br>• Advertência: o medo do passado torna o consulente o seu próprio inimigo, atrasando a realização.",
+                "Atributo básico": "• Material: Atrasos burocráticos, quarentenas, excesso de zelo em negócios e desconfiança de propostas.<br>• Mental: Paranoia, postura com um pé atrás, exaustão psíquica e hipervigilância.<br>• Sentimental: Dificuldade em se abrir por ter sido ferido em relacionamentos antigos; timidez e recuo afetivo.<br>• Espiritual: Defesas psíquicas ativadas ao limite; isolamento profilático.",
+                "Atributo diverso": "• Obstáculo/oposição: Fantasmas do passado que travam o passo no presente.<br>• Orientação/conselho: Não baixe a guarda do nada, mas desconfie de paranoias absurdas e use a experiência sem se paralisar."
+            }},
+            { name: "Dez de Paus", type: "menor", number: "10", imgUrl: `${baseUrl}W10.jpg`, sections: {
+                "Núcleo": "• Essência: Sobrecarga de responsabilidades, esforço extremo, fadiga e força para vencer.<br>• Definição: O consulente carrega mais peso do que suporta por não saber delegar, cobrindo a própria visão dos resultados.<br>• Advertência: a realização vem, mas custa um preço altíssimo de estresse, cansaço físico e falta de tempo para si.",
+                "Atributo básico": "• Material: Rotinas de trabalho massacrantes, acúmulo de funções, finalização penosa de projetos e deveres pesados.<br>• Mental: Mente assoberbada, sensação de opressão e dificuldade para enxergar o sucesso que já alcançou.<br>• Sentimental: Relação pesada onde uma só pessoa carrega todo o fardo da convivência nas costas.<br>• Espiritual: Processo de regeneração profunda estilo troca de pele; purificação pelo trabalho árduo.",
+                "Atributo diverso": "• Obstáculo/oposição: Incapacidade de dizer não ou delegar tarefas aos outros.<br>• Orientação/conselho: Assuma suas responsabilidades, não pare no meio do caminho, mas reorganize a rotina assim que vencer a batalha."
+            }},
+            { name: "Pajem de Paus", type: "menor", number: "Pajem", imgUrl: `${baseUrl}WC1P.jpg`, sections: {
+                "Núcleo": "• Essência: Entusiasmo, boas notícias para o futuro, garra e proatividade.<br>• Definição: Uma proposta vibrante que reativa projetos parados.",
+                "Atributo básico": "• Material: Oportunidades reais de emprego, convites de negócios promissores.<br>• Mental: Mente otimista, agitada, comunicativa.<br>• Sentimental: Flertes empolgantes, química sexual intensa.<br>• Espiritual: Energia de renovação, vigor e motivação."
+            }},
+            { name: "Cavaleiro de Paus", type: "menor", number: "Cavaleiro", imgUrl: `${baseUrl}WC2K.jpg`, sections: {
+                "Núcleo": "• Essência: Paixão, dinamismo, aventura, velocidade e liderança nata.<br>• Definição: O empreendedor audacioso que arrebenta barreiras para fazer acontecer enquanto a chama do entusiasmo estiver acesa.<br>• Advertência: ansiedade e precipitação que podem deixar uma trilha de bagunça pelo caminho.",
+                "Atributo básico": "• Material: Mudanças repentinas de cidade/casa, viagens de lazer ou trabalho, soluções ágeis de negócios.<br>• Mental: Mente arrojada, focada em resolver tudo sem perdas de tempo com melindres.<br>• Sentimental: Química sexual explosiva, romances apaixonados, lealdade de amizade e contatinhos múltiplos por pura empolgação.<br>• Espiritual: Fogo sagrado de motivação e vigor para mudar a própria vida.",
+                "Atributo diverso": "• Obstáculo/oposição: Impaciência que coloca os frutos em risco antes da hora.<br>• Orientação/conselho: Invista, vá atrás com coragem, reaja rápido e arrisque-se na busca do sucesso."
+            }},
+            { name: "Rainha de Paus", type: "menor", number: "Rainha", imgUrl: `${baseUrl}WC3Q.jpg`, sections: {
+                "Núcleo": "• Essência: Elevação, magnetismo, honra, liderança generosa e poder espiritual.<br>• Definição: A melhor rainha do tarô; domestica qualquer fera (transforma tigre em gatinho) com sua altivez, brilho próprio e integridade.<br>• Advertência: não tolera deslealdades; se for enganada, afasta-se para sempre sem precisar de vinganças vulgares.",
+                "Atributo básico": "• Material: Empreendedorismo de sucesso, autonomia total, prosperidade e liderança reconhecida por todos.<br>• Mental: Mente brilhante, centrada, conselheira sábia e capacidade de resolver o caos com elegância.<br>• Sentimental: Afeto caloroso, fidelidade por honra própria, magnetismo irresistível e maturidade afetiva.<br>• Espiritual: A maior potência espiritual da corte (mães de santo, sacerdotisas); transforma o ambiente ao seu redor.",
+                "Atributo diverso": "• Obstáculo/oposição: Não aceita joguinhos ou falta de postura dos outros.<br>• Orientação/conselho: Aja com honra, tome a iniciativa, seja carismática, leal e exerça sua autonomia."
+            }},
+            { name: "Rei de Paus", type: "menor", number: "Rei", imgUrl: `${baseUrl}WC4K.jpg`, sections: {
+                "Núcleo": "• Essência: Liderança honrada, mentor espiritual, carisma nobre, dinamismo e força.<br>• Definição: O grande líder paternal e inspirador que guia os outros pelo exemplo de nobreza, garra e honestidade.<br>• Advertência: pode ser rígido em suas convicções para garantir que a justiça e a ordem prevaleçam.",
+                "Atributo básico": "• Material: Empreendedorismo de alto nível, sucesso comercial, capacidade de delegar tarefas e prosperidade por mérito.<br>• Mental: Mente visionária, arrojada, excelente em debates e com capacidade de improviso única.<br>• Sentimental: Bom marido, pai protetor, parceiro apaixonado, envolvente e focado na felicidade do lar.<br>• Espiritual: Sacerdote, guia espiritual, mentor de sabedoria que cura as feridas dos outros.",
+                "Atributo diverso": "• Obstáculo/oposição: Excesso de rigor na defesa de seus princípios.<br>• Orientação/conselho: Tome atitudes enérgicas, seja honrado, batalhe pelos seus ideais, persuada pelo carisma e lidere."
+            }},
+
+            // ==========================================
+            // ARCANOS MENORES - ESPADAS (S)
+            // ==========================================
+            { name: "Ás de Espadas", type: "menor", number: "As", imgUrl: `${baseUrl}S01.jpg`, sections: {
+                "Núcleo": "• Essência: Representa força, potência, vigor, vontade primordial e clareza mental.<br>• Definição: É a ideia fixa, o impulso de realização racional (eu quero, faço, acontece) que amplia e acelera o arcano maior que o acompanha.<br>• Advertência: onde começa a dificuldade do naipe; pode gerar excessos, conflitos mentais, medos e ansiedades se não for bem canalizado.",
+                "Atributo básico": "• Material: Potência e disposição para a ação rápida; propensão a pequenos acidentes ou cortes físicos.<br>• Mental: Racionalidade pura, juízo, lucidez, inteligência prática e lógica afiada.<br>• Sentimental: Intensidade extrema, operando em polos definitivos (amor ou ódio, tudo ou nada).<br>• Espiritual: Força do elemento Ar expandida sem limites, intensificando a energia psíquica do entorno.",
+                "Atributo diverso": "• Obstáculo/oposição: Pode ampliar a destruição ou o caos de arcanos maiores difíceis.<br>• Orientação/conselho: Compartimente o problema para resolvê-lo aos pedaços; seja proativo, batalhe e conquiste pela inteligência."
+            }},
+            { name: "Dois de Espadas", type: "menor", number: "2", imgUrl: `${baseUrl}S02.jpg`, sections: {
+                "Núcleo": "• Essência: Representa um cabo de guerra, teimosia, oposição e cegueira voluntária.<br>• Definição: Um impasse kármico gerado pelo orgulho e pela recusa em enxergar a realidade para não ter que ceder ou dar razão ao outro.<br>• Advertência: é uma posição onde se perde por vaidade; o problema está visível, mas o consulente recusa-se a tirar a venda dos olhos.",
+                "Atributo básico": "• Material: Rupturas causadas por divergências e empates onde nenhum dos dois lados aceita ceder.<br>• Mental: Mente obtusa, bloqueada para o diálogo, focada apenas em provar que está certa.<br>• Sentimental: Distanciamento defensivo, recusa em se reconciliar e braços cruzados para o afeto.<br>• Espiritual: Tensão psíquica decorrente de medo infundado e alto estresse.",
+                "Atributo diverso": "• Obstáculo/oposição: Obstáculo intransponível e irreversível construído pelo próprio consulente por puro orgulho.<br>• Orientação/conselho: Pare de querer ter razão; pause, radicalize ou não ouça a provocação para evitar o conflito inútil."
+            }},
+            { name: "Três de Espadas", type: "menor", number: "3", imgUrl: `${baseUrl}S03.jpg`, sections: {
+                "Núcleo": "• Essência: Sofrimento, decepção, dor no coração e quebra de expectativas.<br>• Definição: A descoberta dolorosa de uma palavra não cumprida ou traição recente que o consulente permitiu por ter se recusado a ver a verdade no Dois de Espadas.<br>• Advertência: não há como recuperar a situação; insistir resultará em mais sofrimento.",
+                "Atributo básico": "• Material: Rompimentos concretos e prejuízos por incompatibilidade ou falhas de acordos.<br>• Mental: Crise criativa, pesar, mágoa e fixação na dor da decepção.<br>• Sentimental: Coração machucado, melancolia, sentimento de abandono e pena de si mesmo.<br>• Espiritual: Vulnerabilidade decorrente do desgaste emocional e ferimentos de saúde (cardíacos ou cortes).",
+                "Atributo diverso": "• Obstáculo/oposição: Impossibilidade de perdoar ou reconciliar no momento.<br>• Orientação/conselho: Aceite a ruptura, mude o foco, renuncie aos planos primários e resolva as pendências."
+            }},
+            { name: "Quatro de Espadas", type: "menor", number: "4", imgUrl: `${baseUrl}S04.jpg`, sections: {
+                "Núcleo": "• Essência: Paralisia, repouso forçado, reclusão e suspensão temporária.<br>• Definição: Arcano kármico onde a ação divina retira o consulente de cena para evitar um mal maior, impondo uma trégua para cura e reflexão.<br>• Advertência: nada acontece ou funciona durante este período; qualquer tentativa de agir será travada.",
+                "Atributo básico": "• Material: Pausas involuntárias no trabalho, internações, quarentenas ou retiros.<br>• Mental: Esgotamento mental absoluto, necessidade de isolamento para recompor as ideias e refugiar-se do caos.<br>• Sentimental: Anestesia emocional, afastamento, mudez e indisponibilidade para trocas afetivas.<br>• Espiritual: Estado de reabilitação e recomposição de forças psíquicas em repouso.",
+                "Atributo diverso": "• Obstáculo/oposição: Imobilidade física ou emocional que impede qualquer progresso imediato.<br>• Orientação/conselho: Pare, silencie, recolha-se, descanse e recupere suas forças antes de tentar qualquer movimento."
+            }},
+            { name: "Cinco de Espadas", type: "menor", number: "5", imgUrl: `${baseUrl}S05.jpg`, sections: {
+                "Núcleo": "• Essência: Humilhação, derrota moral, teimosia radical e vitória sem glória.<br>• Definição: O consulente se coloca em papel degradante ou age com deslealdade para vingar a dor do Três de Espadas, resultando em um vexame público.<br>• Advertência: considerada uma das piores cartas; o ganho obtido por meios vergonhosos custa a dignidade do consulente.",
+                "Atributo básico": "• Material: Conquistas através de humilhação e destruição moral.<br>• Mental: Pensamentos de vingança, ganância desmedida e vitimismo travestido de agressividade.<br>• Sentimental: Relações degradantes onde a pessoa se humilha, implora por amor ou tenta controlar o outro de forma vexatória.<br>• Espiritual: Exposição a conflitos graves, ferimentos por objetos cortantes e agressões.",
+                "Atributo diverso": "• Obstáculo/oposição: Atitudes autodestrutivas impulsionadas pelo orgulho ferido.<br>• Orientação/conselho: Renuncie, abdique, desista da disputa e afaste-se imediatamente."
+            }},
+            { name: "Seis de Espadas", type: "menor", number: "6", imgUrl: `${baseUrl}S06.jpg`, sections: {
+                "Núcleo": "• Essência: Abandono de cenário, fuga dos problemas, travessia e incerteza.<br>• Definição: Retirada estratégica de uma situação insuportável (do Cinco de Espadas) rumo ao desconhecido, sem planejamento prévio.<br>• Advertência: o problema original não foi resolvido, apenas deixado para trás por pura impotência.",
+                "Atributo básico": "• Material: Mudança de emprego ou cidade feita às pressas, viagens de afastamento ou pedido de demissão sem garantias.<br>• Mental: Ansiedade, insegurança, desconforto mental e perda de fé nas convicções anteriores.<br>• Sentimental: Partida com o coração pesado, triste pelo fracasso da relação, mas ciente de que não dá para ficar.<br>• Espiritual: Alerta crítico: desconexão espiritual, risco de contaminações psíquicas ou comportamentos de fuga da realidade.",
+                "Atributo diverso": "• Obstáculo/oposição: Medo do futuro e falta de perspectiva sobre o destino final.<br>• Orientação/conselho: Abandone o que te faz mal, tire férias, desista do conflito e busque o relaxamento possível."
+            }},
+            { name: "Sete de Espadas", type: "menor", number: "7", imgUrl: `${baseUrl}S07.jpg`, sections: {
+                "Núcleo": "• Essência: Diplomacia, astúcia, estratégia, jogo de cintura e atalhos.<br>• Definição: O uso da esperteza e do desvio para contornar problemas sem bater de frente, podendo variar da habilidade à trapaça.<br>• Advertência: linha muito tênue entre a malícia inteligente e a desonestidade/dissimulação.",
+                "Atributo básico": "• Material: Soluções informais, esquemas, caixa dois ou busca pelo caminho de menor esforço.<br>• Mental: Mente perspicaz, articulada e focada em encontrar atalhos sem expor suas intenções reais.<br>• Sentimental: Segredos na relação, dissimulação, ocultação de verdades ou pequenas traições.<br>• Espiritual: Vulnerabilidade a vírus, infecções ou dores disfarçadas que exigem atenção.",
+                "Atributo diverso": "• Obstáculo/oposição: Risco de cair na hipocrisia ou no deboche infantil.<br>• Orientação/conselho: Cale-se, aja com diplomacia, use de estratégia e evite confrontos diretos (finja demência)."
+            }},
+            { name: "Oito de Espadas", type: "menor", number: "8", imgUrl: `${baseUrl}S08.jpg`, sections: {
+                "Núcleo": "• Essência: Vexame público, erros desmascarados, perda de dignidade e aprisionamento.<br>• Definição: Arcano kármico em que os malfeitos ou trapaças do passado vêm à tona publicamente, gerando condenação e humilhação.<br>• Advertência: segunda pior carta do jogo; o consulente sofre as consequências sem fazer autocrítica, culpando os outros pelo próprio erro.",
+                "Atributo básico": "• Material: Litígios judiciais, prisões, calotes expostos, perdas financeiras irreversíveis e prejuízos públicos.<br>• Mental: Mente encurralada, desespero, recusa em admitir a própria culpa e paranoia.<br>• Sentimental: Relações sufocantes, escândalos de traição expostos a todos e desespero por ser pego.<br>• Espiritual: Estado crítico de saúde psíquica, dores crônicas ou confinamentos por erros de tratamento.",
+                "Atributo diverso": "• Obstáculo/oposição: Exposição vexatória que destrói a reputação do consulente.<br>• Orientação/conselho: Não force nada, interrompa o movimento, peça desculpas e assuma os erros cometidos."
+            }},
+            { name: "Nove de Espadas", type: "menor", number: "9", imgUrl: `${baseUrl}S09.jpg`, sections: {
+                "Núcleo": "• Essência: Desespero, angústia extrema, tormento mental e pesadelo psíquico.<br>• Definição: Arcano kármico que representa o sofrimento acumulado por tentar reverter uma perda que já é definitiva e irrecuperável.<br>• Advertência: indicador gravíssimo de sofrimento mental, crises de ansiedade severas e necessidade urgente de auxílio médico/psiquiátrico.",
+                "Atributo básico": "• Material: Prejuízos irreparáveis, penúria, perda da honra ou do sustento gerando pânico.<br>• Mental: Insônia, paranoias, autopunição, pensamentos obsessivos e fixação no sofrimento.<br>• Sentimental: Sensação de abandono, culpa sufocante, mágoa profunda e desespero por não aceitar o fim.<br>• Espiritual: Agravamento de distúrbios do sono e esgotamento total das forças vitais.",
+                "Atributo diverso": "• Obstáculo/oposição: Incapacidade de enxergar qualquer luz ao fim do túnel por excesso de vitimismo ou dor.<br>• Orientação/conselho: Isolar-se para refletir, praticar a autocrítica, resignar-se diante do inevitável e buscar ajuda profissional urgente."
+            }},
+            { name: "Dez de Espadas", type: "menor", number: "10", imgUrl: `${baseUrl}S10.jpg`, sections: {
+                "Núcleo": "• Essência: Fim drástico, ruptura de valores, decisão radical e encerramento de ciclo com dor.<br>• Definição: O próprio consulente decide colocar um ponto final definitivo na situação por livre-arbítrio, abrindo mão de velhas convicções.<br>• Advertência: trata-se de uma realização sem lucro ou alegria imediata, marcando um corte profundo que deixa cicatrizes.",
+                "Atributo básico": "• Material: Encerramento definitivo de contratos, falências deliberadas ou cortes radicais de gastos.<br>• Mental: Anulação das ilusões anteriores através de uma clareza dolorosa, porém libertadora.<br>• Sentimental: Fim de relacionamento motivado pela perda total de esperança; romper por não aguentar mais, mesmo ainda gostando.<br>• Espiritual: Dores agudas ou processos cirúrgicos/de reabilitação que eliminam o problema pela raiz.",
+                "Atributo diverso": "• Negativo/invertido: anula e limpa o excesso ou a característica do Arcano Maior ao qual se conecta.<br>• Obstáculo/oposição: A dor do desapego de valores que eram tidos como fundamentais.<br>• Orientação/conselho: Revire seus conceitos, tome a decisão radical, rompa com o que te aprisiona e resolva a questão."
+            }},
+            { name: "Pajem de Espadas", type: "menor", number: "Pajem", imgUrl: `${baseUrl}SC1P.jpg`, sections: {
+                "Núcleo": "• Essência: Imprudência, imaturidade, maledicência, fofoca.<br>• Definição: Perfil irritadiço, desafiador e fraco intelectualmente.",
+                "Atributo básico": "• Material: Reprovação em testes, furos em contratos.<br>• Mental: Mente do contra, pirracenta, stalker.<br>• Sentimental: Provocações vulgares, falta de respeito.<br>• Espiritual: Acidentes leves, intrigas psíquicas."
+            }},
+            { name: "Cavaleiro de Espadas", type: "menor", number: "Cavaleiro", imgUrl: `${baseUrl}SC2K.jpg`, sections: {
+                "Núcleo": "• Essência: Ação rápida, inteligência combativa, proatividade e foco inabalável.<br>• Definição: O guerreiro determinado a vencer qualquer obstáculo a qualquer custo, por seu próprio mérito.<br>• Advertência: falta severa de empatia; atropela pessoas e sentimentos em nome do objetivo.",
+                "Atributo básico": "• Material: Conquistas rápidas por esforço braçal/intelectual puro; ausência completa de sorte.<br>• Mental: Discurso afiado, lógica implacável, teimosia fanática pelas próprias convicções.<br>• Sentimental: Relações sem melodrama, comunicação direta e franca que pode ser tida como insensível ou agressiva.<br>• Espiritual: Coragem e força de combate para romper cenários de dor ou opressão.",
+                "Atributo diverso": "• Negativo/invertido: pode sinalizar agressividade física/verbal extrema se mal acompanhado.<br>• Obstáculo/oposição: Falta de diplomacia e brutalidade no trato com os outros.<br>• Orientação/conselho: Encare os desafios sem preguiça, use sua inteligência, vá direto ao ponto e não recue."
+            }},
+            { name: "Rainha de Espadas", type: "menor", number: "Rainha", imgUrl: `${baseUrl}SC3Q.jpg`, sections: {
+                "Núcleo": "• Essência: Austeridade, inteligência afiada, perspicácia, vingança e postura cirúrgica.<br>• Definição: A mulher fria que desmascara qualquer mentira ou dissimulação; alcança o que quer a qualquer custo, mas perde o que ganha por usar bases imorais.<br>• Advertência: terra árida que não gera fertilidade ou afeto; motivada por traumas antigos, mágoa e orgulho.",
+                "Atributo básico": "• Material: Conquistas por chantagem ou imposição dura, perda futura por falta de bases éticas, capacidade analítica pericial.<br>• Mental: Mente brilhante, crítica, reservada, calculista e dona de uma franqueza que fere.<br>• Sentimental: Relações frias, jogos de poder, falta de empatia, desconfiança defensiva e amargura.<br>• Espiritual: Isolamento, postura de justiçamento e energia de corte inflexível.",
+                "Atributo diverso": "• Negativo/invertido: vingança, revanchismo destrutivo e degradação moral do próprio consulente.<br>• Obstáculo/oposição: Ambiente tóxico, chantagens e falta absoluta de compaixão.<br>• Orientação/conselho: Seja rígida, perspicaz, estrategista, focada e desmascare falsidades sem vacilar."
+            }},
+            { name: "Rei de Espadas", type: "menor", number: "Rei", imgUrl: `${baseUrl}SC4K.jpg`, sections: {
+                "Núcleo": "• Essência: Força mental suprema, autocontrole, autoridade, razão e estratégia.<br>• Definição: O rei da racionalidade pura que governa com pulso firme e alcança o que quer por mérito e destreza, sem perder a cabeça.<br>• Advertência: risco de frieza extrema, crueldade ou tirania para proteger seu reinado.",
+                "Atributo básico": "• Material: Poder de decisão definitivo, reconstrução de cenários destruídos, domínio total de suas ferramentas de trabalho.<br>• Mental: Lógica cirúrgica, foco inabalável, mestre no debate e capacidade de agir sob pressão sem drama.<br>• Sentimental: Relações pautadas pela clareza e obrigações, sem espaço para melodramas ou demonstrações emotivas.<br>• Espiritual: Controle mental absoluto e força psíquica de comando.",
+                "Atributo diverso": "• Negativo/invertido: pode sinalizar ingratidão ou relacionamentos abusivos e tiranos se associado ao Imperador.<br>• Obstáculo/oposição: Postura irredutível que afasta a empatia dos outros.<br>• Orientação/conselho: Use a inteligência, controle suas emoções, tome decisões definitivas e batalhe pelo topo."
+            }},
+
+
+            // ==========================================
+            // ARCANOS MENORES - OUROS (P)
+            // ==========================================
+             { name: "Ás de Ouros", type: "menor", number: "As", imgUrl: `${baseUrl}P01.jpg`, sections: {
+                "Núcleo": "• Essência: Representa potência, começo, realização e materialização.<br>• Definição: É a descoberta de infinitas possibilidades amparadas pelo plano divino.<br>• Advertência: apesar de não haver obstáculos concretos, ainda necessita de mérito e esforço, pois basta plantar para colher a recompensa.",
+                "Atributo básico": "• Material: Traz resultados sólidos e duradouros.<br>• Mental: Indica domínio sólido e seguro de informações.<br>• Sentimental: Mostra relacionamentos com solidez.<br>• Espiritual: Reflete uma riqueza interior manifesta externamente.<br>• Conselho: Aproveite o momento para investir em si mesmo, faça planejamentos."
+            }},
+            { name: "Dois de Ouros", type: "menor", number: "2", imgUrl: `${baseUrl}P02.jpg`, sections: {
+                "Núcleo": "• Essência: Representa adversidades, jogo de cintura, flexibilidade e mobilidade diante de mudanças.<br>• Definição: É um arcano kármico que traz impasses e adiamentos temporários não causados pelo consulente, exigindo administração das circunstâncias.<br>• Advertência: recomenda-se não gastar esforço desnecessário naquilo que não está ao seu alcance mudar.",
+                "Atributo básico": "• Material: Aponta para malabarismos materiais, impedimentos concretos (como sistemas que caem ou voos atrasados) e dificuldades temporárias.<br>• Mental: Indica falta de opinião firme, polarização de ideias e necessidade de coordenar múltiplos projetos simultaneamente.<br>• Sentimental: Reflete um escape de posicionamento e descomprometimento diante das adversidades na relação.",
+                "Atributo diverso": "• Obstáculo/oposição: Obstáculos sociais ou familiares intransponíveis no momento atual, assemelhando-se à Justiça para conter o consulente.<br>• Orientação/conselho: Seja flexível, não se posicione de forma rígida, administre o adiamento e aceite o limite da circunstância."
+            }},
+            { name: "Três de Ouros", type: "menor", number: "3", imgUrl: `${baseUrl}P03.jpg`, sections: {
+                "Núcleo": "• Essência: Expansão, avanço com a ajuda de terceiros, planejamento e trabalho em equipe.<br>• Definição: Ocorre a superação de um obstáculo através do ensinamento, orientação ou contribuição de um terceiro elemento ou evento.<br>• Advertência: requer maturidade para pedir e aceitar ajuda, não sendo o momento de buscar liderança solitária.",
+                "Atributo básico": "• Material: Representa associações, parcerias, captação de recursos, obras e aplicação de um planejamento ou planilha.<br>• Mental: Demanda detalhismo, perícia, competência em provas/testes e capacidade de aprender fazendo sob supervisão.<br>• Sentimental: Pode indicar ficantes que se encontram através de terceiros ou namoros que impulsionam um casamento formal.",
+                "Atributo diverso": "• Orientação/conselho: Peça e aceite ajuda, siga os protocolos estabelecidos, seja humilde e trabalhe em equipe."
+            }},
+            { name: "Quatro de Ouros", type: "menor", number: "4", imgUrl: `${baseUrl}P04.jpg`, sections: {
+                "Núcleo": "• Essência: Mesquinharia, medo de perder o que conquistou, egoísmo e imobilidade.<br>• Definição: É o apego excessivo aos lucros passados, gerando estagnação e incapacidade de assumir riscos ou investir.<br>• Advertência: o medo de perder fará com que o consulente mingue e perca o que tem, pois não dá fluidez à energia.",
+                "Atributo básico": "• Material: Resulta em apodrecimento e desvalorização material por falta de investimento e teimosia arcaica.<br>• Mental: Visão deturpada, imaturidade, ideias fixas e bloqueio de pensamentos que impedem a visão do futuro.<br>• Sentimental: Relacionamentos abusivos pautados pelo ciúme, posse e medo excessivo de abandono.",
+                "Atributo diverso": "• Obstáculo/oposição: O consulente inventa obstáculos irreais apenas para justificar a própria avareza.<br>• Orientação/conselho: A carta aconselha, paradoxalmente, a parar, não investir, recuar e reter o que tem."
+            }},
+            { name: "Cinco de Ouros", type: "menor", number: "5", imgUrl: `${baseUrl}P05.jpg`, sections: {
+                "Núcleo": "• Essência: Pobreza, perdas, afastamento e carência de todo tipo.<br>• Definição: Crise instalada devido ao egoísmo prévio (Quatro de Ouros), onde o consulente perde o poder sobre si mesmo.<br>• Advertência: o consulente é o responsável direto pela própria perda e fracasso.",
+                "Atributo básico": "• Material: Indica falência, falta de recursos, roubo, desemprego e coisas estragadas.<br>• Mental: Esgotamento, ansiedade, pessimismo, comunicação confusa e mental fraco sem intenções claras.<br>• Sentimental: Miséria afetiva, vitimismo, crise de relacionamento ou rejeição profunda.<br>• Espiritual: Precariedade da fé e desesperança total.",
+                "Atributo diverso": "• Obstáculo/oposição: Bloqueios, autocomiseração e críticas destrutivas do entorno.<br>• Orientação/conselho: Recue, pare, afaste-se da situação, desista e não se comprometa no momento."
+            }},
+            { name: "Seis de Ouros", type: "menor", number: "6", imgUrl: `${baseUrl}P06.jpg`, sections: {
+                "Núcleo": "• Essência: Carência, necessidade de aceitar ajuda externa e superação pelo exercício da humildade.<br>• Definição: É um arcano kármico onde a solução para a carência vem da doação generosa de terceiros sem exigir nada em troca.<br>• Advertência: o adiamento atual ocorre pelo orgulho do consulente em relutar e considerar a ajuda uma esmola.",
+                "Atributo básico": "• Material: Recebimento de dinheiro, oportunidade, bolsas de estudo ou tratamentos médicos através de mecenas.<br>• Mental: Postura passiva de quem espera que o outro tome a atitude, precisando de informações ou terapia.<br>• Sentimental: Espera que o outro venha oferecer carinho e atenção, comportando-se como quem pede esmola afetiva.",
+                "Atributo diverso": "• Obstáculo/oposição: Demora na decisão devido às dúvidas e ao medo, prolongando os prejuízos.<br>• Orientação/conselho: Seja humilde, busque e aceite a ajuda oferecida, não procrastine e compreenda o valor do trabalho em equipe."
+            }},
+            { name: "Sete de Ouros", type: "menor", number: "7", imgUrl: `${baseUrl}P07.jpg`, sections: {
+                "Núcleo": "• Essência: Colheita de lucros, avaliação, progresso e ambição positiva para crescer.<br>• Definição: Representa um crescimento lento, sólido e seguro, baseado na meritocracia e no esforço contínuo.<br>• Advertência: a precipitação e a pressa farão o lucro ser pequeno; é necessária extrema paciência.",
+                "Atributo básico": "• Material: Prosperidade a longo prazo, ganho, doações, heranças e achados inesperados.<br>• Mental: Capacidade de análise, equilíbrio, domínio do cenário e serenidade.<br>• Sentimental: Recebe amor, companheirismo e carinho, mas a natureza insatisfeita do arcano sempre busca mais.",
+                "Atributo diverso": "• Obstáculo/oposição: Provas, desafios e contestações que demandam estrutura e determinação.<br>• Orientação/conselho: Tenha paciência, aja com prudência, saiba esperar o tempo da colheita e mantenha a disciplina."
+            }},
+            { name: "Oito de Ouros", type: "menor", number: "8", imgUrl: `${baseUrl}P08.jpg`, sections: {
+                "Núcleo": "• Essência: Recomeço, renascimento, refinamento de habilidades e início de um novo ciclo planejado.<br>• Definição: É um arcano kármico que traz a oportunidade de aplicar conhecimentos prévios em um cenário totalmente novo e promissor.<br>• Advertência: o consulente pode estar diante de um cenário surpreendente que ainda não consegue enxergar claramente.",
+                "Atributo básico": "• Material: Sucesso através de trabalho autodidata, descobrimento de potenciais e fontes seguras de prosperidade.<br>• Mental: Perfeccionismo, aprimoramento, aprendizagem constante e prudência nas escolhas.<br>• Sentimental: Representa o retorno de uma relação ou um recomeço afetivo onde ambos melhoraram e renasceram para dar certo.",
+                "Atributo diverso": "• Obstáculo/oposição: Processo solitário e sem supervisão.<br>• Orientação/conselho: Inove, recicle conhecimentos, atualize-se e retome seus projetos."
+            }},
+            { name: "Nove de Ouros", type: "menor", number: "9", imgUrl: `${baseUrl}P09.jpg`, sections: {
+                "Núcleo": "• Essência: Fertilidade, sucesso garantido, satisfação e sensação de dever cumprido.<br>• Definição: É a colheita plena e regozijo do esforço do arcano anterior, marcando distinção social e plenitude.",
+                "Atributo básico": "• Material: Luxo, estabilidade financeira, promoções, compras vantajosas, férias e multiplicação de bens.<br>• Mental: Autoconfiança elevada, planejamento a longo prazo e elaboração segura de ideais.<br>• Sentimental: Felicidade afetiva, segurança e bons partidos, além de representar o momento de concretização de uma gravidez.",
+                "Atributo diverso": "• Obstáculo/oposição: Caso tenha tido prejuízos anteriores, este arcano garante a recuperação de tudo o que foi perdido.<br>• Orientação/conselho: Invista, reconheça seu valor, seja producente e exiba suas realizações com autonomia."
+            }},
+            { name: "Dez de Ouros", type: "menor", number: "10", imgUrl: `${baseUrl}P10.jpg`, sections: {
+                "Núcleo": "• Essência: Realização concreta a longo prazo, glória, estabilidade e o fim dos problemas.<br>• Definição: Representa a perpetuação do sucesso material para o futuro através de família, legados e instituições.",
+                "Atributo básico": "• Material: Heranças, imóveis, empresas sólidas e boa administração de uma rede de contatos valiosa.<br>• Mental: Responsabilidade, competência, segurança e respeito pelas tradições e costumes.<br>• Sentimental: Felicidade familiar no sentido burocrático/concreto, união com entes queridos e adoções.<br>• Espiritual: Ligação forte com a ancestralidade.",
+                "Atributo diverso": "• Obstáculo/oposição: Doenças hereditárias podem ser um ponto de atenção no aspecto físico.<br>• Orientação/conselho: Confie, invista alto, cuide, comprometa-se e tome decisões firmes."
+            }},
+            { name: "Pajem de Ouros", type: "menor", number: "Pajem", imgUrl: `${baseUrl}PC1P.jpg`, sections: {
+                "Núcleo": "• Essência: Representa o primeiro passo, a intenção de investimento.<br>• Definição: Um começo fundamentado que atrai convites, notícias boas.",
+                "Atributo básico": "• Material: Traz convites para negócios reais, propostas oportunas.<br>• Mental: É um perfil tradicionalista, tagarela, que possui boa memória.<br>• Sentimental: Demonstra lealdade, é bem intencionado, prestativo.<br>• Espiritual: Foco e disciplina práticos."
+            }},
+            { name: "Cavaleiro de Ouros", type: "menor", number: "Cavaleiro", imgUrl: `${baseUrl}PC2K.jpg`, sections: {
+                "Núcleo": "• Essência: Foco no futuro, disciplina rigorosa, execução prática e pragmatismo absoluto.<br>• Definição: O arcano realiza os objetivos de forma concreta e lenta, fazendo manutenção de suas conquistas sem se arriscar desnecessariamente.<br>• Advertência: falta de flexibilidade, podendo apresentar teimosia e excessiva possessividade com o que conquistou.",
+                "Atributo básico": "• Material: Trabalhador incansável, prudente com investimentos, mantém a saúde em dia para não parar de produzir.<br>• Mental: Extremamente lógico, organizado com planilhas, meticuloso, burocrático e focado na robustez.<br>• Sentimental: É gentil e claro na comunicação, porém não possui estrutura afetiva e não demonstra sentimentos romantizados.",
+                "Atributo diverso": "• Orientação/conselho: Mantenha o foco, persevere nas metas, tenha paciência, cuide de suas bases e vá atrás do que deseja."
+            }},
+            { name: "Rainha de Ouros", type: "menor", number: "Rainha", imgUrl: `${baseUrl}PC3Q.jpg`, sections: {
+                "Núcleo": "• Essência: Domínio, prosperidade, preservação, autocontrole e objetividade prática.<br>• Definição: Aquela que domina seu patrimônio e só investe recursos ou afeto onde há certeza absoluta de sucesso.<br>• Advertência: pode parecer mesquinha, mas é apenas extremamente cautelosa e realista para não perder seu território.",
+                "Atributo básico": "• Material: Fértil, colhe o que planta, demonstra afeto dando presentes e suprindo financeiramente seus interesses.<br>• Mental: Analítica, observadora, calma, sensata, pragmática e detentora de um discernimento apurado.<br>• Sentimental: Sensual, calorosa, madura, leal e confiável, mas abandona a relação ao menor sinal de fracasso.",
+                "Atributo diverso": "• Orientação/conselho: Aja com cautela, mantenha a disposição para o esforço prático, alimente seus projetos e seja realista."
+            }},
+            { name: "Rei de Ouros", type: "menor", number: "Rei", imgUrl: `${baseUrl}PC4K.jpg`, sections: {
+                "Núcleo": "• Essência: A materialidade suprema, proteção, domínio do território, estabilidade e capacidade executiva.<br>• Definição: O grande provedor, experiente e pacificador que conquista autoridade pelo mérito e sabe o que está fazendo.<br>• Advertência: demonstra alto grau de ciúmes, possessividade e apego territorial.",
+                "Atributo básico": "• Material: Prosperidade evidente, bem posicionado socialmente, capaz de prover recursos, status e superar qualquer obstáculo prático.<br>• Mental: Pragmático, sistemático, burocrático, excelente negociador com capacidade de conciliar demandas.<br>• Sentimental: Demonstra afeto servindo e presenteando, estabelecendo vínculos pautados na durabilidade em vez de romantismos.",
+                "Atributo diverso": "• Obstáculo/oposição: Retorna ao cenário da vida do consulente para marcar e dominar o território espontaneamente.<br>• Orientação/conselho: Confie em si mesmo, tenha coragem, defenda o seu reino, honre seus compromissos e assuma a liderança."
+            }}
+        ];
+
+        let activeFilter = 'todos';
+        let searchQuery = '';
+
+        const cardsGrid = document.getElementById('cardsGrid');
+        const cardCount = document.getElementById('cardCount');
+        const searchInput = document.getElementById('searchInput');
+
+        // Render Cards
+        function renderCards() {
+            cardsGrid.innerHTML = '';
+            
+            let filtered = rawData.filter(card => {
+                const matchesFilter = activeFilter === 'todos' || card.type === activeFilter;
+                const matchesSearch = card.name.toLowerCase().includes(searchQuery.toLowerCase());
+                return matchesFilter && matchesSearch;
+            });
+
+            cardCount.innerText = `${filtered.length} arcano${filtered.length !== 1 ? 's' : ''}`;
+
+            filtered.forEach((card, index) => {
+                const cardHTML = `
+                    <div class="card-hover bg-app-card rounded-2xl border border-app-secondary/30 overflow-hidden cursor-pointer flex flex-col h-56 sm:h-64 shadow-lg transition duration-300" onclick="openModal(${index}, '${card.name}')">
+                        <div class="h-4/5 card-image-placeholder p-2 flex flex-col items-center justify-center">
+                            <img src="${card.imgUrl}" alt="${card.name}" class="card-image shadow-[0_4px_10px_rgba(0,0,0,0.5)]" onerror="this.src='https://placehold.co/200x300/1c143c/a87ff3?text=${card.name.replace(/\s/g, '+')}'">
+                        </div>
+                        <div class="h-1/5 bg-app-surface/80 flex items-center justify-center px-2 z-10 border-t border-app-secondary/30">
+                            <h3 class="font-cinzel text-xs sm:text-sm font-semibold text-white tracking-wider text-center truncate w-full">${card.name.toUpperCase()}</h3>
+                        </div>
+                    </div>
+                `;
+                cardsGrid.insertAdjacentHTML('beforeend', cardHTML);
+            });
+        }
+
+        // Search Listener
+        searchInput.addEventListener('input', (e) => {
+            searchQuery = e.target.value;
+            renderCards();
+        });
+
+        // Category Filter
+        function filterCards(type) {
+            activeFilter = type;
+            
+            ['todos', 'maior', 'menor'].forEach(t => {
+                const btn = document.getElementById(`btn-${t}`);
+                if(t === type) {
+                    btn.classList.add('pill-active');
+                    btn.classList.remove('bg-app-surface', 'border', 'border-app-secondary/30', 'text-app-textMuted');
+                } else {
+                    btn.classList.remove('pill-active');
+                    btn.classList.add('bg-app-surface', 'border', 'border-app-secondary/30', 'text-app-textMuted');
+                }
+            });
+
+            renderCards();
+        }
+
+        // Modal Logic
+        const modal = document.getElementById('cardModal');
+        const modalContent = document.getElementById('modalContent');
+        const modalTitle = document.getElementById('modalTitle');
+        const modalNumber = document.getElementById('modalNumber');
+        const modalImage = document.getElementById('modalImage');
+        const modalBody = document.getElementById('modalBody');
+
+        function openModal(index, cardName) {
+            const card = rawData.find(c => c.name === cardName);
+            if(!card) return;
+
+            modalTitle.innerText = card.name;
+            modalNumber.innerText = card.type === 'maior' ? `ARCANO MAIOR • ${card.number}` : `ARCANO MENOR`;
+            modalImage.src = card.imgUrl;
+            
+            modalBody.innerHTML = '';
+            
+            for (const [sectionTitle, content] of Object.entries(card.sections)) {
+                
+                // Separa os tópicos que começam com "•" e transforma em cards.
+                const items = content.split(/<br>\s*•\s*|•\s*/).filter(item => item.trim() !== '');
+                
+                let formattedContent = items.map(item => {
+                    let cleanItem = item.replace(/<br>\s*$/g, '').trim();
+                    let parts = cleanItem.split(':'); // Separa a palavra-chave da descrição
+                    
+                    if (parts.length > 1) {
+                        let keyword = parts[0].trim();
+                        let text = parts.slice(1).join(':').trim(); 
+                        
+                        return `
+                        <div class="border border-app-secondary/30 rounded-2xl p-4 mb-3 bg-[#171033] shadow-lg shadow-black/20 relative overflow-hidden group">
+                            <!-- Faixa lateral -->
+                            <div class="absolute left-0 top-0 bottom-0 w-1.5 bg-app-primary/50 group-hover:bg-app-primary transition-colors"></div>
+                            
+                            <span class="text-app-primary font-bold text-sm tracking-widest uppercase block mb-1.5 ml-2">
+                                ${keyword}
+                            </span>
+                            <span class="text-app-textMuted text-sm leading-relaxed font-light block ml-2">
+                                ${text}
+                            </span>
+                        </div>
+                        `;
+                    } else {
+                        // Parágrafo normal se não tiver ":"
+                        return `<p class="text-app-textMuted text-sm leading-relaxed font-light mb-3">${cleanItem}</p>`;
+                    }
+                }).join('');
+
+                // Renderiza a seção
+                modalBody.innerHTML += `
+                    <div class="mb-6">
+                        <h3 class="text-white font-cinzel font-bold text-xl mb-4 tracking-wide flex items-center gap-3 border-b border-app-secondary/20 pb-2">
+                            <i class="fas fa-moon text-app-primary text-sm"></i> ${sectionTitle.toUpperCase()}
+                        </h3>
+                        <div class="flex flex-col">
+                            ${formattedContent}
+                        </div>
+                    </div>
+                `;
+            }
+
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modalContent.classList.remove('translate-y-full');
+            }, 10);
+        }
+
+        function closeModal() {
+            modalContent.classList.add('translate-y-full');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 300);
+        }
+
+        // Initialize
+        renderCards();
+
+    </script>
+</body>
+</html>
