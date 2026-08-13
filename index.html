@@ -88,20 +88,6 @@
         }
         .practice-fab:active { transform: scale(0.97); }
 
-        /* ---- botão de troca de deck (topo) ---- */
-        .deck-btn {
-            width: 46px; height: 46px; border-radius: 9999px;
-            background: rgba(168,127,243,.15); border: 1px solid rgba(168,127,243,.5);
-            display:flex; align-items:center; justify-content:center; color:#a87ff3;
-            box-shadow: 0 4px 14px rgba(168,127,243,.15);
-            position: relative;
-        }
-        .deck-btn:active { transform: scale(0.93); }
-        .deck-btn .deck-dot {
-            position:absolute; bottom:-2px; right:-2px; width:14px; height:14px; border-radius:9999px;
-            background:#f7e0a3; border:2px solid #110b29; font-size:0;
-        }
-
         /* ---- opções dentro do modal de deck ---- */
         .deck-option { display:flex; align-items:center; gap:14px; width:100%; padding:12px 14px; border-radius:1rem; border:1px solid rgba(168,127,243,.22); background:rgba(37,27,77,.55); transition:all .2s ease; text-align:left; }
         .deck-option:active { transform: scale(0.98); }
@@ -197,10 +183,6 @@
                 <h1 class="font-cinzel tracking-[0.3em] text-3xl font-bold mt-2 text-white">TAROT</h1>
                 <p class="text-[0.65rem] tracking-[0.2em] text-app-textMuted mt-1 uppercase">Estude • Compreenda • Integre</p>
             </div>
-            <button onclick="openDeckModal()" class="deck-btn absolute right-0 top-1/2 -translate-y-1/2" aria-label="Escolher deck">
-                <i class="fas fa-layer-group text-lg"></i>
-                <span class="deck-dot"></span>
-            </button>
         </div>
 
         <!-- Search Bar -->
@@ -263,20 +245,20 @@
         <i class="fas fa-layer-group"></i> Praticar Leitura
     </button>
 
-    <!-- Deck selector modal -->
-    <div id="deckModal" class="fixed inset-0 z-[260] hidden items-center justify-center bg-app-bg/85 backdrop-blur-sm" onclick="if(event.target===this) closeDeckModal()">
+    <!-- Deck selector modal (aparece ao iniciar a prática) -->
+    <div id="deckModal" class="fixed inset-0 z-[260] hidden items-center justify-center bg-app-bg/85 backdrop-blur-sm">
         <div class="bg-app-surface border border-app-secondary/30 rounded-3xl p-6 w-[85%] max-w-xs shadow-2xl">
             <p class="text-white font-cinzel text-sm tracking-widest uppercase text-center mb-5">Escolher Deck</p>
             <div class="flex flex-col gap-3">
-                <button id="deckOption-padrao" class="deck-option" onclick="setDeck('padrao')">
-                    <img src="https://marycusack.com/Decks/Images/Tarot/S/SeventhSphere2/00%20Fool.jpg" alt="Deck Padrão">
+                <button id="deckOption-padrao" class="deck-option" onclick="selectDeckOption('padrao')">
+                    <img src="https://marycusack.com/Decks/Images/Tarot/S/SeventhSphere2/00%20Fool.jpg" alt="Default">
                     <div class="flex-1 min-w-0">
-                        <p class="font-cinzel text-white text-sm font-semibold">Deck Padrão</p>
+                        <p class="font-cinzel text-white text-sm font-semibold">Default</p>
                         <p class="text-app-textMuted text-[0.65rem]">Seventh Sphere</p>
                     </div>
                     <i class="fas fa-circle-check text-app-primary deck-check"></i>
                 </button>
-                <button id="deckOption-riderwaite" class="deck-option" onclick="setDeck('riderwaite')">
+                <button id="deckOption-riderwaite" class="deck-option" onclick="selectDeckOption('riderwaite')">
                     <img src="https://trilhasnouniverso.com.br/wp-content/uploads/2024/12/00-scaled.jpg" alt="Rider Waite">
                     <div class="flex-1 min-w-0">
                         <p class="font-cinzel text-white text-sm font-semibold">Rider Waite</p>
@@ -285,7 +267,9 @@
                     <i class="fas fa-circle-check text-app-primary deck-check"></i>
                 </button>
             </div>
-            <button onclick="closeDeckModal()" class="block mx-auto text-app-textMuted text-[0.65rem] mt-5">Cancelar</button>
+            <button onclick="confirmDeckChoice()" class="pill-active w-full rounded-full py-3.5 text-xs font-semibold tracking-widest uppercase mt-6 shadow-lg shadow-app-primary/20">
+                OK
+            </button>
         </div>
     </div>
 
@@ -983,7 +967,11 @@ rawData.forEach(card => {
             return (currentDeck === 'riderwaite' && card.imgUrlRW) ? card.imgUrlRW : card.imgUrl;
         }
 
+        let selectedDeckTemp = 'padrao';
+
         function openDeckModal() {
+            selectedDeckTemp = currentDeck;
+            updateDeckOptionUI();
             document.getElementById('deckModal').classList.remove('hidden');
             document.getElementById('deckModal').classList.add('flex');
         }
@@ -992,14 +980,22 @@ rawData.forEach(card => {
             document.getElementById('deckModal').classList.remove('flex');
         }
 
-        function setDeck(deck) {
-            currentDeck = deck;
-            document.getElementById('deckOption-padrao').classList.toggle('deck-option-active', deck === 'padrao');
-            document.getElementById('deckOption-riderwaite').classList.toggle('deck-option-active', deck === 'riderwaite');
+        function updateDeckOptionUI() {
+            document.getElementById('deckOption-padrao').classList.toggle('deck-option-active', selectedDeckTemp === 'padrao');
+            document.getElementById('deckOption-riderwaite').classList.toggle('deck-option-active', selectedDeckTemp === 'riderwaite');
+        }
+
+        function selectDeckOption(deck) {
+            selectedDeckTemp = deck;
+            updateDeckOptionUI();
+        }
+
+        function confirmDeckChoice() {
+            currentDeck = selectedDeckTemp;
             renderCards();
             if (currentCard && !modal.classList.contains('hidden')) modalImage.src = cardImg(currentCard);
-            renderPracticeBoard();
             closeDeckModal();
+            openPracticeModal();
         }
 
         const cardsGrid = document.getElementById('cardsGrid');
@@ -1210,30 +1206,50 @@ rawData.forEach(card => {
 
         const meaningKeys = ['Núcleo', 'Atributo básico', 'Atributo diverso'];
         let meaningIndex = 0;
-                function cardWord(card) {
+
+        // Extrai as palavras-chave da linha "Essência:" dentro do Núcleo de cada carta,
+        // usadas como alternativas extras quando só há 1 palavra cadastrada em customPlateWords.
+        function extractEssenceWords(card) {
+            if (!card.sections || !card.sections['Núcleo']) return [];
+            const match = card.sections['Núcleo'].match(/Essência:\s*([^<]+?)\./i);
+            if (!match) return [];
+            return match[1].split(',')
+                .map(w => w.trim())
+                .filter(w => w !== '')
+                .map(w => w.charAt(0).toUpperCase() + w.slice(1));
+        }
+
+        function cardWord(card) {
             const custom = customPlateWords[card.name];
-            
-            // Se houver palavras personalizadas cadastradas para a carta
+            let palavras = [];
+
+            // Palavras personalizadas cadastradas para a carta
             if (custom && custom.trim() !== '') {
-                // Separa as palavras pela vírgula, remove os espaços extras e filtra partes vazias
-                const palavras = custom.split(',').map(p => p.trim()).filter(p => p !== '');
-                
-                // Escolhe um índice aleatório dentro da quantidade de palavras
-                const indiceAleatorio = Math.floor(Math.random() * palavras.length);
-                
-                // Retorna a palavra sorteada
-                return palavras[indiceAleatorio];
+                palavras = custom.split(',').map(p => p.trim()).filter(p => p !== '');
             }
-            
-            // Fallback: se não tiver customWord, usa a lógica antiga (Núcleo, etc.)
-            const key = meaningKeys[meaningIndex];
-            return (card.sections && card.sections[key]) ? card.sections[key] : card.name;
+
+            // Se só existir 1 palavra cadastrada (caso comum dos Arcanos Maiores),
+            // completa com as palavras da Essência para garantir variação ao trocar o significado
+            if (palavras.length <= 1) {
+                extractEssenceWords(card).forEach(w => {
+                    if (!palavras.includes(w)) palavras.push(w);
+                });
+            }
+
+            if (palavras.length === 0) return card.name;
+
+            // Alternância determinística: cada clique em "Significado" sempre muda a palavra exibida
+            return palavras[meaningIndex % palavras.length];
         }
 
 
         function shuffleArr(arr) { let a=[...arr],c=a.length,r; while(c!==0){ r=Math.floor(Math.random()*c); c--; [a[c],a[r]]=[a[r],a[c]]; } return a; }
 
         function openPractice() {
+            openDeckModal();
+        }
+
+        function openPracticeModal() {
             document.getElementById('practiceModal').classList.remove('hidden');
             document.getElementById('practiceModal').classList.add('flex');
             practiceReset();
@@ -1277,12 +1293,14 @@ rawData.forEach(card => {
             const rowMaior = document.getElementById('scrRowMaior');
             const rowMenor = document.getElementById('scrRowMenor');
             houseOrder.forEach(h => {
+                const cardM = practiceState[h].maior;
+                const cardN = practiceState[h].menor;
                 const colM = document.createElement('div');
                 colM.className = 'scr-col';
                 colM.innerHTML = `
                     <div class="scr-house-title">${houseLabel[h]}</div>
                     ${practiceSlotHTML(h,'maior')}
-                    <div class="scr-caption">Arcano Maior</div>
+                    <div class="scr-caption">${cardM ? cardM.name : 'Arcano Maior'}</div>
                 `;
                 rowMaior.appendChild(colM);
 
@@ -1290,7 +1308,7 @@ rawData.forEach(card => {
                 colN.className = 'scr-col';
                 colN.innerHTML = `
                     ${practiceSlotHTML(h,'menor')}
-                    <div class="scr-caption">Arcano Menor</div>
+                    <div class="scr-caption">${cardN ? cardN.name : 'Arcano Menor'}</div>
                 `;
                 rowMenor.appendChild(colN);
             });
