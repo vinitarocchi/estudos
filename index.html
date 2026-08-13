@@ -33,7 +33,7 @@
     <style>
         body {
             background-color: #110b29;
-            background-image: 
+            background-image:
                 radial-gradient(circle at 15% 50%, rgba(67, 40, 116, 0.4) 0%, transparent 50%),
                 radial-gradient(circle at 85% 30%, rgba(45, 23, 89, 0.4) 0%, transparent 50%);
             color: white;
@@ -43,83 +43,149 @@
             overflow-x: hidden;
             -webkit-tap-highlight-color: transparent;
         }
-
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar {
-            width: 6px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #110b29; 
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #3b2d75; 
-            border-radius: 10px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #a87ff3; 
-        }
-
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #110b29; }
+        ::-webkit-scrollbar-thumb { background: #3b2d75; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #a87ff3; }
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
         .glass-effect {
             background: rgba(28, 20, 60, 0.7);
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
             border-top: 1px solid rgba(255, 255, 255, 0.05);
         }
-
-        .card-image-placeholder {
-            position: relative;
-            overflow: hidden;
-            border-radius: 1rem;
-        }
-
-        .card-image {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            border-radius: 1rem;
-        }
-        
-        .pill-active {
-            background: linear-gradient(90deg, #a87ff3, #d0a4ff);
-            color: #110b29;
-            font-weight: 600;
-        }
-        
-        .moon-phases {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 12px;
-            color: #f7e0a3;
-            font-size: 1.2rem;
-            margin-bottom: 10px;
-        }
-        
-        .moon-phases i:nth-child(3) {
-            font-size: 1.8rem;
-            text-shadow: 0 0 15px rgba(247, 224, 163, 0.6);
-        }
-
-        .card-hover:active {
-            transform: scale(0.95);
-        }
+        .card-image-placeholder { position: relative; overflow: hidden; border-radius: 1rem; }
+        .card-image { width: 100%; height: 100%; object-fit: cover; border-radius: 1rem; }
+        .pill-active { background: linear-gradient(90deg, #a87ff3, #d0a4ff); color: #110b29; font-weight: 600; }
+        .moon-phases { display: flex; justify-content: center; align-items: center; gap: 12px; color: #f7e0a3; font-size: 1.2rem; margin-bottom: 10px; }
+        .moon-phases i:nth-child(3) { font-size: 1.8rem; text-shadow: 0 0 15px rgba(247, 224, 163, 0.6); }
+        .card-hover:active { transform: scale(0.95); }
         @media (hover: hover) {
-            .card-hover:hover {
-                transform: translateY(-5px);
-                box-shadow: 0 10px 25px rgba(168, 127, 243, 0.2);
-            }
+            .card-hover:hover { transform: translateY(-5px); box-shadow: 0 10px 25px rgba(168, 127, 243, 0.2); }
+        }
+
+        /* ---- lista de arcanos (estilo catálogo) ---- */
+        .arcana-row { display:flex; align-items:center; gap:16px; padding:14px 4px; border-bottom:1px solid rgba(168,127,243,.12); transition:transform .2s ease, background .2s ease; cursor:pointer; }
+        .arcana-row:last-child { border-bottom:none; }
+        .arcana-row:active { transform: scale(0.98); background: rgba(168,127,243,.06); border-radius: 16px; }
+        .arcana-thumb { width:64px; height:64px; border-radius:9999px; overflow:hidden; flex-shrink:0; border:2px solid rgba(168,127,243,.45); box-shadow:0 6px 16px rgba(0,0,0,.45), 0 0 0 4px rgba(168,127,243,.06); background:#251b4d; }
+        .arcana-thumb img { width:100%; height:100%; object-fit:cover; object-position:center 18%; }
+        .arcana-pill { flex:1; background:rgba(37,27,77,.65); border:1px solid rgba(168,127,243,.18); border-radius:1.1rem; padding:14px 18px; min-width:0; }
+        .arcana-pill h3 { font-family:'Cinzel',serif; font-weight:700; font-size:1.05rem; letter-spacing:.03em; color:#fff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+        .arcana-pill .arcana-tag { font-size:.62rem; letter-spacing:.15em; text-transform:uppercase; color:#a87ff3; margin-top:2px; display:block; }
+
+        /* ---- botão flutuante de praticar leitura ---- */
+        .practice-fab {
+            position: fixed; left: 16px; right: 16px; bottom: 18px; z-index: 40;
+            display:flex; align-items:center; justify-content:center; gap:10px;
+            padding: 15px 20px; border-radius: 9999px;
+            background: linear-gradient(90deg, rgba(168,127,243,.95), rgba(208,164,255,.95));
+            color: #110b29; font-family:'Cinzel',serif; font-weight:700; font-size:.72rem;
+            letter-spacing:.15em; text-transform:uppercase;
+            box-shadow: 0 10px 30px rgba(168,127,243,.35), 0 4px 12px rgba(0,0,0,.4);
+            border: 1px solid rgba(255,255,255,.25);
+        }
+        .practice-fab:active { transform: scale(0.97); }
+
+        /* ---- botão de troca de deck (topo) ---- */
+        .deck-btn {
+            width: 46px; height: 46px; border-radius: 9999px;
+            background: rgba(168,127,243,.15); border: 1px solid rgba(168,127,243,.5);
+            display:flex; align-items:center; justify-content:center; color:#a87ff3;
+            box-shadow: 0 4px 14px rgba(168,127,243,.15);
+            position: relative;
+        }
+        .deck-btn:active { transform: scale(0.93); }
+        .deck-btn .deck-dot {
+            position:absolute; bottom:-2px; right:-2px; width:14px; height:14px; border-radius:9999px;
+            background:#f7e0a3; border:2px solid #110b29; font-size:0;
+        }
+
+        /* ---- opções dentro do modal de deck ---- */
+        .deck-option { display:flex; align-items:center; gap:14px; width:100%; padding:12px 14px; border-radius:1rem; border:1px solid rgba(168,127,243,.22); background:rgba(37,27,77,.55); transition:all .2s ease; text-align:left; }
+        .deck-option:active { transform: scale(0.98); }
+        .deck-option.deck-option-active { border-color:#a87ff3; background:rgba(168,127,243,.16); box-shadow:0 0 0 1px rgba(168,127,243,.3) inset; }
+        .deck-option .deck-check { opacity:0; transition:opacity .2s ease; }
+        .deck-option.deck-option-active .deck-check { opacity:1; }
+        .deck-option img { width:44px; height:64px; border-radius:.6rem; object-fit:cover; border:1px solid rgba(168,127,243,.35); flex-shrink:0; }
+
+        /* ---- tabuleiro do Jogo de Treino ---- */
+        .scr-board{ width:100%; max-width:640px; margin:0 auto; padding:4px 0 10px; display:flex; flex-direction:column; gap:10px; transition: all 0.3s ease; }
+        .scr-row{ display:flex; gap:10px; justify-content:center; transition: all 0.3s ease; }
+
+        .scr-col{ flex:1; display:flex; flex-direction:column; align-items:center; min-width:0; }
+        .scr-house-title{ font-family:'Cinzel',serif; font-size:10px; letter-spacing:2px; text-transform:uppercase; color:#a87ff3; margin:0 0 10px; text-align:center; transition: all 0.3s ease; }
+        .scr-slot{
+            width:100%; aspect-ratio:0.62; max-width:150px; border:1px solid rgba(168,127,243,.4);
+            border-radius:10px; background:rgba(168,127,243,.06); position:relative; overflow:hidden;
+            cursor:pointer; display:flex; align-items:center; justify-content:center; margin-bottom:10px;
+            transition:all .3s ease;
+        }
+        .scr-slot:active{ transform:scale(.96); }
+        .scr-slot.empty{ border-style:dashed; color:#a398c2; font-family:'Cinzel',serif; font-size:10px; text-align:center; padding:6px; }
+        .scr-slot img{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
+        .scr-plate{
+            position:absolute; bottom:0; left:0; width:100%; background:rgba(17,11,41,.9);
+            border-top:1px solid rgba(168,127,243,.5); color:#fff; font-family:'Cinzel',serif; font-weight:600;
+            font-size:9.5px; letter-spacing:.6px; text-transform:uppercase; text-align:center; padding:6px 3px; line-height:1.35;
+            transition: all 0.3s ease;
+        }
+        .scr-caption{ font-size:8.5px; letter-spacing:1px; text-transform:uppercase; color:#a398c2; text-align:center; margin:-4px 0 10px; transition: all 0.3s ease; }
+
+        /* Estado "Selecionando" - Encolhe bastante para caber acima do painel de sorteio/escolha */
+.scr-board.selecting{ gap:2.3px; padding:2px 0 4px; }
+.scr-board.selecting .scr-row{ gap:5.6px; }
+.scr-board.selecting .scr-slot{ max-width:55.7px; margin-bottom:2.3px; border-radius:5.6px; }
+.scr-board.selecting .scr-slot.empty{ font-size:6.6px; padding:1.5px; letter-spacing:0; }
+.scr-board.selecting .scr-house-title{ font-size:7.8px; margin-bottom:2.3px; letter-spacing:1px; }
+.scr-board.selecting .scr-caption{ font-size:6.6px; margin:0 0 2.3px; letter-spacing:0.3px; }
+.scr-board.selecting .scr-plate{ font-size:6.1px; padding:1.5px; letter-spacing:0; line-height:1.1; }
+
+
+
+
+
+
+
+        /* ---- dinâmica de sorteio ---- */
+        .shuffle-wrap{ position:relative; width:100%; height:80px; display:flex; align-items:center; justify-content:center; }
+        .shuffle-card{
+            width:36px;height:62px;border-radius:5px;
+            border:1px solid rgba(168,127,243,.6);
+            background:linear-gradient(160deg, #2b2058, #171033);
+            position:absolute; animation:shuf 1.3s cubic-bezier(.25,1,.5,1) infinite;
+        }
+        @keyframes shuf{
+            0%{transform:translate(0,0) rotate(0);}
+            20%{transform:translate(-22px,-10px) rotate(-14deg);}
+            40%{transform:translate(0,-14px) rotate(0);}
+            60%{transform:translate(22px,-10px) rotate(14deg);}
+            100%{transform:translate(0,0) rotate(0);}
+        }
+        .back-card{
+            width:36px;height:62px;border-radius:5px;
+            border:1px solid rgba(168,127,243,.6);
+            background:linear-gradient(160deg, #2b2058, #171033);
+            cursor:pointer; flex-shrink:0; transition:transform .25s ease;
+            display:flex;align-items:center;justify-content:center;color:#a87ff3;
+        }
+        .back-card:active{ transform:translateY(-5px) scale(1.08); }
+        .bottom-panel{
+            position:fixed; left:0; right:0; bottom:0; width:100%;
+            background:#1c143c; border-top:1px solid rgba(168,127,243,.35);
+            padding:14px 14px 22px; z-index:200; max-height:85vh; /* Ampliado para caber 56 cartas */
+            box-shadow:0 -15px 35px rgba(0,0,0,.6);
+            border-top-left-radius:1.5rem; border-top-right-radius:1.5rem;
+            display: flex; flex-direction: column;
         }
     </style>
 </head>
-<body class="min-h-screen flex flex-col pb-24">
+<body class="min-h-screen flex flex-col pb-6">
 
     <!-- Header -->
     <header class="pt-12 pb-6 px-6 relative z-10">
-        <div class="flex justify-between items-center mb-6">
-            <button class="w-12 h-12 rounded-full bg-app-surface border border-app-secondary/30 flex justify-center items-center text-app-textMuted hover:text-white transition">
-                <i class="fas fa-bars"></i>
-            </button>
-            
+        <div class="relative flex justify-center items-center mb-6">
             <div class="text-center">
                 <div class="moon-phases">
                     <i class="fas fa-moon" style="transform: scaleX(-1);"></i>
@@ -131,88 +197,105 @@
                 <h1 class="font-cinzel tracking-[0.3em] text-3xl font-bold mt-2 text-white">TAROT</h1>
                 <p class="text-[0.65rem] tracking-[0.2em] text-app-textMuted mt-1 uppercase">Estude • Compreenda • Integre</p>
             </div>
-            
-            <button class="w-12 h-12 rounded-full bg-app-surface border border-app-secondary/30 flex justify-center items-center text-app-primary hover:text-white transition">
-                <i class="fas fa-sparkles"></i>
+            <button onclick="openDeckModal()" class="deck-btn absolute right-0 top-1/2 -translate-y-1/2" aria-label="Escolher deck">
+                <i class="fas fa-layer-group text-lg"></i>
+                <span class="deck-dot"></span>
             </button>
         </div>
 
         <!-- Search Bar -->
-        <div class="relative w-full mb-6 group">
+        <div class="relative w-full mb-4 group">
             <i class="fas fa-search absolute left-5 top-1/2 transform -translate-y-1/2 text-app-textMuted group-focus-within:text-app-primary transition"></i>
-            <input type="text" id="searchInput" placeholder="Pesquisar arcano..." 
+            <input type="text" id="searchInput" placeholder="Pesquisar arcano ou palavra-chave..."
                 class="w-full bg-app-surface border border-app-secondary/30 rounded-full py-4 pl-12 pr-12 text-sm text-white placeholder-app-textMuted focus:outline-none focus:border-app-primary focus:ring-1 focus:ring-app-primary transition shadow-lg">
             <button class="absolute right-5 top-1/2 transform -translate-y-1/2 text-app-primary">
                 <i class="fas fa-sliders-h"></i>
             </button>
         </div>
 
-        <!-- Filter Pills -->
-        <div class="flex gap-3 overflow-x-auto pb-2 scrollbar-hide snap-x">
-            <button onclick="filterCards('todos')" id="btn-todos" class="filter-btn pill-active whitespace-nowrap px-6 py-2.5 rounded-full text-sm snap-start flex items-center gap-2 shadow-lg shadow-app-primary/20 transition">
-                <i class="fas fa-sparkles text-xs"></i> Todos
-            </button>
-            <button onclick="filterCards('maior')" id="btn-maior" class="filter-btn bg-app-surface border border-app-secondary/30 text-app-textMuted whitespace-nowrap px-6 py-2.5 rounded-full text-sm snap-start hover:bg-app-card transition">
-                Arcanos Maiores
-            </button>
-            <button onclick="filterCards('menor')" id="btn-menor" class="filter-btn bg-app-surface border border-app-secondary/30 text-app-textMuted whitespace-nowrap px-6 py-2.5 rounded-full text-sm snap-start hover:bg-app-card transition">
-                Arcanos Menores
-            </button>
+        <!-- Filter Pills Area -->
+        <div class="flex flex-col gap-4">
+            <div class="flex gap-3 overflow-x-auto pb-2 scrollbar-hide snap-x">
+                <button onclick="filterCards('todos')" id="btn-todos" class="filter-btn pill-active whitespace-nowrap px-6 py-2.5 rounded-full text-sm snap-start flex items-center gap-2 shadow-lg shadow-app-primary/20 transition">
+                    <i class="fas fa-sparkles text-xs"></i> Todos
+                </button>
+                <button onclick="filterCards('maior')" id="btn-maior" class="filter-btn bg-app-surface border border-app-secondary/30 text-app-textMuted whitespace-nowrap px-6 py-2.5 rounded-full text-sm snap-start hover:bg-app-card transition">
+                    Arcanos Maiores
+                </button>
+                <button onclick="filterCards('menor')" id="btn-menor" class="filter-btn bg-app-surface border border-app-secondary/30 text-app-textMuted whitespace-nowrap px-6 py-2.5 rounded-full text-sm snap-start hover:bg-app-card transition">
+                    Arcanos Menores
+                </button>
+            </div>
+
+            <div id="suitFilters" class="hidden gap-2 overflow-x-auto pb-2 scrollbar-hide snap-x transition-all duration-300">
+                <button onclick="filterSuits('todos')" id="btn-suit-todos" class="pill-active whitespace-nowrap px-4 py-1.5 rounded-full text-xs snap-start transition shadow-app-primary/20">
+                    Todos os Naipes
+                </button>
+                <button onclick="filterSuits('ouros')" id="btn-suit-ouros" class="bg-app-surface border border-app-secondary/30 text-app-textMuted whitespace-nowrap px-4 py-1.5 rounded-full text-xs snap-start hover:bg-app-card transition">
+                    Ouros
+                </button>
+                <button onclick="filterSuits('espadas')" id="btn-suit-espadas" class="bg-app-surface border border-app-secondary/30 text-app-textMuted whitespace-nowrap px-4 py-1.5 rounded-full text-xs snap-start hover:bg-app-card transition">
+                    Espadas
+                </button>
+                <button onclick="filterSuits('copas')" id="btn-suit-copas" class="bg-app-surface border border-app-secondary/30 text-app-textMuted whitespace-nowrap px-4 py-1.5 rounded-full text-xs snap-start hover:bg-app-card transition">
+                    Copas
+                </button>
+                <button onclick="filterSuits('paus')" id="btn-suit-paus" class="bg-app-surface border border-app-secondary/30 text-app-textMuted whitespace-nowrap px-4 py-1.5 rounded-full text-xs snap-start hover:bg-app-card transition">
+                    Paus
+                </button>
+            </div>
         </div>
     </header>
 
     <!-- Main Content -->
-    <main class="flex-1 px-6 relative z-10">
-        <div class="flex justify-between items-center mb-4 text-xs text-app-textMuted">
+    <main class="flex-1 px-6 relative z-10 pb-28">
+        <div class="flex justify-between items-center mb-2 text-xs text-app-textMuted">
             <span id="cardCount">...</span>
             <button class="flex items-center gap-1 hover:text-white transition">
                 Ordenar: Nome <i class="fas fa-chevron-down text-[10px]"></i>
             </button>
         </div>
-
-        <!-- Cards Grid -->
-        <div id="cardsGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-            <!-- Cards injected via JS -->
-        </div>
+        <div id="cardsGrid" class="flex flex-col"></div>
     </main>
 
-    <!-- Bottom Nav -->
-    <nav class="fixed bottom-0 left-0 w-full glass-effect z-40 pb-safe pt-3 px-6 rounded-t-3xl shadow-[0_-10px_40px_rgba(0,0,0,0.3)]">
-        <div class="flex justify-between items-center max-w-md mx-auto mb-3">
-            <a href="#" class="flex flex-col items-center gap-1 text-app-primary">
-                <i class="fas fa-sparkles text-xl drop-shadow-[0_0_8px_rgba(168,127,243,0.6)]"></i>
-                <span class="text-[10px] font-medium">Explorar</span>
-            </a>
-            <a href="#" class="flex flex-col items-center gap-1 text-app-textMuted hover:text-white transition">
-                <i class="far fa-heart text-xl"></i>
-                <span class="text-[10px] font-medium">Favoritos</span>
-            </a>
-            <a href="#" class="flex flex-col items-center gap-1 text-app-textMuted hover:text-white transition">
-                <i class="fas fa-book text-xl"></i>
-                <span class="text-[10px] font-medium">Diário</span>
-            </a>
-            <a href="#" class="flex flex-col items-center gap-1 text-app-textMuted hover:text-white transition">
-                <i class="fas fa-info-circle text-xl"></i>
-                <span class="text-[10px] font-medium">Sobre</span>
-            </a>
-            <a href="#" class="flex flex-col items-center gap-1 text-app-textMuted hover:text-white transition">
-                <i class="far fa-user text-xl"></i>
-                <span class="text-[10px] font-medium">Perfil</span>
-            </a>
+    <!-- Praticar Leitura (botão flutuante) -->
+    <button onclick="openPractice()" class="practice-fab">
+        <i class="fas fa-layer-group"></i> Praticar Leitura
+    </button>
+
+    <!-- Deck selector modal -->
+    <div id="deckModal" class="fixed inset-0 z-[260] hidden items-center justify-center bg-app-bg/85 backdrop-blur-sm" onclick="if(event.target===this) closeDeckModal()">
+        <div class="bg-app-surface border border-app-secondary/30 rounded-3xl p-6 w-[85%] max-w-xs shadow-2xl">
+            <p class="text-white font-cinzel text-sm tracking-widest uppercase text-center mb-5">Escolher Deck</p>
+            <div class="flex flex-col gap-3">
+                <button id="deckOption-padrao" class="deck-option" onclick="setDeck('padrao')">
+                    <img src="https://marycusack.com/Decks/Images/Tarot/S/SeventhSphere2/00%20Fool.jpg" alt="Deck Padrão">
+                    <div class="flex-1 min-w-0">
+                        <p class="font-cinzel text-white text-sm font-semibold">Deck Padrão</p>
+                        <p class="text-app-textMuted text-[0.65rem]">Seventh Sphere</p>
+                    </div>
+                    <i class="fas fa-circle-check text-app-primary deck-check"></i>
+                </button>
+                <button id="deckOption-riderwaite" class="deck-option" onclick="setDeck('riderwaite')">
+                    <img src="https://trilhasnouniverso.com.br/wp-content/uploads/2024/12/00-scaled.jpg" alt="Rider Waite">
+                    <div class="flex-1 min-w-0">
+                        <p class="font-cinzel text-white text-sm font-semibold">Rider Waite</p>
+                        <p class="text-app-textMuted text-[0.65rem]">Deck clássico</p>
+                    </div>
+                    <i class="fas fa-circle-check text-app-primary deck-check"></i>
+                </button>
+            </div>
+            <button onclick="closeDeckModal()" class="block mx-auto text-app-textMuted text-[0.65rem] mt-5">Cancelar</button>
         </div>
-    </nav>
+    </div>
 
     <!-- Detailed Card Modal -->
-    <div id="cardModal" class="fixed inset-0 z-50 hidden">
+    <div id="cardModal" class="fixed inset-0 z-[300] hidden">
         <div class="absolute inset-0 bg-app-bg/80 backdrop-blur-sm" onclick="closeModal()"></div>
         <div class="absolute bottom-0 left-0 w-full bg-app-surface h-[85vh] rounded-t-[2.5rem] flex flex-col shadow-[0_-10px_50px_rgba(0,0,0,0.5)] border-t border-app-secondary/20 transform transition-transform duration-300 translate-y-full" id="modalContent">
-            
-            <!-- Handle -->
             <div class="w-full flex justify-center pt-4 pb-2" onclick="closeModal()">
                 <div class="w-16 h-1.5 bg-app-textMuted/30 rounded-full"></div>
             </div>
-
-            <!-- Header -->
             <div class="px-8 pb-4 flex justify-between items-start border-b border-white/5">
                 <div class="flex items-center gap-4">
                     <img id="modalImage" src="" alt="" class="w-16 h-24 object-cover rounded-lg border border-app-secondary/50">
@@ -225,29 +308,77 @@
                     <i class="fas fa-times"></i>
                 </button>
             </div>
-
-            <!-- Scrollable Content -->
-            <div class="flex-1 overflow-y-auto px-8 py-6 space-y-8" id="modalBody">
-                <!-- Content injected here -->
+            <div class="px-8 py-3 border-b border-white/5">
+                <div id="planoTabs" class="flex gap-2 overflow-x-auto pb-1 scrollbar-hide snap-x"></div>
             </div>
+            <div class="flex-1 overflow-y-auto px-8 py-6 space-y-8" id="modalBody"></div>
         </div>
     </div>
 
-    <!-- Application Logic and Data -->
+    <!-- ============ PRACTICE MODE (Jogo de Treino SCR) ============ -->
+    <div id="practiceModal" class="fixed inset-0 z-50 hidden flex-col">
+        <div class="absolute inset-0 bg-app-bg/95"></div>
+        
+        <div class="relative flex-1 overflow-y-auto scrollbar-hide px-4 pt-8 pb-32">
+            <div class="flex justify-between items-center mb-4">
+                <div>
+                    <h2 class="font-cinzel text-base font-bold text-white tracking-widest">JOGO DE TREINO</h2>
+                    <button onclick="practiceRandomAll()" class="mt-2 flex items-center gap-1.5 pill-active rounded-full px-3 py-1.5 text-[0.6rem] font-semibold tracking-wide uppercase shadow-lg shadow-app-primary/20">
+                        <i class="fas fa-dice"></i> Gerar Jogo Aleatório
+                    </button>
+                </div>
+                <button onclick="closePractice()" class="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-app-textMuted hover:text-white transition flex-shrink-0">
+                    <i class="fas fa-times text-xs"></i>
+                </button>
+            </div>
+
+            <!-- Tabuleiro -->
+            <div id="practiceBoard" class="scr-board flex-1"></div>
+        </div>
+
+        <!-- Botões reposicionados para a parte inferior -->
+        <div class="absolute bottom-6 left-4 right-4 flex gap-2 z-10">
+            <button onclick="practiceReset()" class="flex-1 bg-app-surface border border-app-secondary/30 text-white rounded-full py-3.5 text-[0.65rem] font-semibold tracking-wide uppercase shadow-lg hover:bg-app-card transition">
+                <i class="fas fa-rotate-left mr-1"></i>Resetar
+            </button>
+            <button onclick="toggleMeaning()" class="flex-1 bg-app-surface border border-app-secondary/30 text-white rounded-full py-3.5 text-[0.65rem] font-semibold tracking-wide uppercase shadow-lg hover:bg-app-card transition">
+                <i class="fas fa-shuffle mr-1"></i>Significado
+            </button>
+        </div>
+    </div>
+
+    <!-- Slot action chooser -->
+    <div id="slotActionModal" class="fixed inset-0 z-[210] hidden items-center justify-center bg-app-bg/85 backdrop-blur-sm">
+        <div class="bg-app-surface border border-app-secondary/30 rounded-2xl p-6 w-[85%] max-w-xs text-center shadow-2xl">
+            <p class="text-white font-cinzel text-sm tracking-wide mb-5" id="slotActionLabel"></p>
+            <div id="slotActionButtonsWrap"></div>
+        </div>
+    </div>
+
+    <!-- Painel de sorteio -->
+    <div id="shufflePanel" class="bottom-panel hidden flex-col">
+        <p id="shuffleTitle" class="font-cinzel text-xs text-app-primary tracking-widest uppercase mb-3 text-center flex-shrink-0"></p>
+        <div id="shuffleGrid" class="w-full flex-1 min-h-0 overflow-y-auto"></div>
+        <button onclick="closeShuffle()" class="block mx-auto text-app-textMuted text-[0.65rem] mt-3 mb-1 flex-shrink-0">Cancelar</button>
+    </div>
+
+    <!-- Painel de escolha manual (lista completa de cartas) -->
+    <div id="choosePanel" class="bottom-panel hidden flex-col">
+        <p id="choosePanelTitle" class="font-cinzel text-xs text-app-primary tracking-widest uppercase mb-3 text-center flex-shrink-0"></p>
+        <div id="choosePanelSuits" class="hidden gap-2 overflow-x-auto pb-2 mb-3 scrollbar-hide flex-shrink-0"></div>
+        <div id="choosePanelGrid" class="flex-1 min-h-0 overflow-y-auto pr-1"></div>
+        <button onclick="closeChoosePanel()" class="block mx-auto text-app-textMuted text-[0.65rem] mt-3 mb-1 flex-shrink-0">Cancelar</button>
+    </div>
+
     <script>
         const baseUrl = "https://marycusack.com/Decks/Images/Tarot/S/SeventhSphere2/";
-        
-        // Template para cartas não preenchidas
-        const tplVazio = {
-            "Núcleo": "• Essência: Em breve.<br>• Definição: Conteúdo em desenvolvimento.",
-            "Atributo básico": "• Material: Em breve.<br>• Mental: Em breve.<br>• Sentimental: Em breve.<br>• Espiritual: Em breve."
-        };
+        const baseRW  = "https://trilhasnouniverso.com.br/wp-content/uploads/2024/12/";
 
-        const rawData = [
-            // ==========================================
+        
+       
             // ARCANOS MAIORES
-            // ==========================================
-            { name: "O Louco", type: "maior", number: "0", imgUrl: `${baseUrl}00%20Fool.jpg`, sections: {
+             const rawData = [
+{ name: "O Louco", type: "maior", number: "0", imgUrl: `${baseUrl}00%20Fool.jpg`, sections: {
                 "Núcleo": "• Essência: ousar, evoluir, expandir, partir.<br>• Definição: momento repleto de liberdade, livre-arbítrio e des-prendimento; férias e lazer como tônica em tudo; alegria de viver cada momento, embora sem grandes definições; irreflexão, insensatez ou excessos que geram dívidas ou insucesso.<br>• Advertência: organizar as ideias, ser mais coerente e menos curioso; ter atenção com a palavra dada ou o compromisso assumido, reveja as responsabilidades; extremo cuidado com a dispersão e o desmazelo; rever o planejamento para o futuro.",
                 "Atributo básico": "• Material: precipitação e desperdício de tempo ou dinheiro; negligência ou busca indefinida por novos caminhos; criação dos próprios obstáculos e problemas reais, transição importante na vida, mas gerando obstáculos por falta de organização.<br>• Mental: indecisão, incoerência ou desorganização que causa atrasos; desatenção e irreflexão originando insensatez ou escapismo; imaturidade ou ingenuidade nos planos futuros; expressão eloquente, comunicação alegre, fala confusa e sem foco.<br>• Sentimental: prazer e alegria que motivam a relação; aventura, imaturidade e frivolidade imperam no momento; impulso, entusiasmo ou excitação que aparentam ser o amor verdadeiro; extravagância ou inquietação; leviandade ou hedonismo.<br>• Espiritual: desordem e negativismo no canal mediúnico; involução, regressão ou vazio espiritual que se instala momentaneamente; interferência contrária e caos no plano astral, miasma; sem direção religiosa ou devoção a alguma divindade.",
                 "Atributo diverso": "• Negativo/invertido: moderação e objetividade que resultam em lucros ou sucesso; respeito e maturidade geram perfeita amizade e bom relacionamento; excelentes acordos, contratos e promessas que serão cumpridas a contento; não há obstáculos.<br>• Obstáculo/oposição: falta de se lançar ao desconhecido, pois o momento é de extrema valia ao progresso; caminhos fechados por falta de iniciativa ou preguiça; sem entusiasmo ou entrega emocional em situações importantes.<br>• Orientação/conselho: ser ousado e pesquisar novos horizontes; buscar inovações e ser flexível diante dos obstáculos; ser mais dinâmico com as próprias ideias; investir ou se arriscar mais nos desejos; não ouvir ninguém, apenas a intuição."
@@ -434,10 +565,6 @@
                 "Atributo básico": "• Material: Fase de sucesso absoluto e glória profissional conquistada através de décadas de experiência e dedicação ao trabalho. O consultor domina o mercado com know-how e habilidade, agindo como um negociador sagaz que protege seus lucros e garante a prosperidade da família e dos negócios, resultando em uma estabilidade financeira inabalável e em uma reputação de autoridade incontestável.<br>• Mental: Mentalidade sistemática, burocrática e voltada para o entendimento claro da realidade, sem espaço para idealismos ou distrações improdutivas. O indivíduo expressa-se com maturidade e autoconsistência, agindo com uma coragem pragmática que lhe permite superar qualquer obstáculo intelectual, focando na organização técnica de recursos e no domínio absoluto de informações que garantam a manutenção do seu status e poder.<br>• Sentimental: No campo afetivo, reflete um relacionamento estável, duradouro e protetor, onde o parceiro demonstra amor através de suporte material e segurança cotidiana. Existe lealdade e fidelidade, embora a expressão dos sentimentos seja pragmática e pouco romântica, manifestando-se em convites para jantares, presentes e no cuidado zeloso com o bem-estar físico e financeiro da pessoa amada.<br>• Espiritual: Momento de solidez mística e conexão com a força primordial da terra, onde a alma se sente em harmonia com as leis do universo. Há uma proteção espiritual robusta que vem através da prática disciplinada e do respeito às tradições, permitindo que o consulente utilize sua experiência mística para estabilizar sua vida e para liderar seu entorno com honra e responsabilidade.",
                 "Atributo diverso": "• Negativo: Indica a perda de controle sobre o patrimônio por excesso de apego ou por uma postura autoritária que gera revoltas e desarmonia. Representa uma fase de estagnação kármica onde o consultor se torna escravo de suas posses, perdendo a flexibilidade para negociar e resultando em prejuízos financeiros e no afastamento de aliados valiosos por pura soberba e falta de visão.<br>• Obstáculo: Ocorre pelo excesso de possessividade e ciúme, que transforma a proteção em uma prisão para si mesmo e para os outros. A obsessão por marcar território e por manter o status a qualquer custo pode gerar um ambiente de tensão e desconfiança constante, onde a espontaneidade é sufocada pela burocracia e pela necessidade neurótica de controlar cada detalhe da vida alheia.<br>• Orientação/conselho: Confie em sua experiência e em sua competência para liderar, proteja o que você conquistou com coragem e tenha atitude para superar qualquer desafio material. Seja fiel aos seus compromissos, honre sua palavra, batalhe pelo seu progresso com paciência e entenda que sua autoridade é sustentada por bases sólidas de responsabilidade, trabalho duro e visão realista do mundo."
             }},
-
-            // ==========================================
-            // ARCANOS MENORES - ESPADAS (S)
-            // ==========================================
             { name: "Ás de Espadas", type: "menor", number: "As", imgUrl: `${baseUrl}S01.jpg`, sections: {
                 "Núcleo": "• Essência: Cortar, decidir, clarear, agir.<br>• Definição: Representa o início de um processo racional intenso, marcado por uma ideia fixa e força de vontade inabalável. É o triunfo da inteligência e da lógica sobre a confusão, trazendo clareza mental e decisões objetivas que rompem obstáculos.<br>• Advertência: Cuidado com o radicalismo e a agressividade verbal; a busca implacável pela verdade ou pela razão pode ferir os outros e gerar conflitos mentais, ansiedades ou um estado de frieza emocional excessiva que isola o consulente.",
                 "Atributo básico": "• Material: Fase de decisões objetivas e proatividade absoluta no trabalho e finanças. O consulente utiliza a inteligência estratégica e a esperteza para conquistar espaços, agindo com vigor e clareza para resolver problemas complexos. É um momento de potência para novos empreendimentos, onde a vontade genuína de vencer impulsiona o sucesso material.<br>• Mental: Mentalidade extremamente lúcida, focada na lógica e na racionalidade para analisar situações de forma compartimentada. O consulente possui uma ideia fixa de vitória, expressando-se com eloquência e juízo firme. Há uma grande capacidade intelectual de articulação, embora possa haver tendência à ansiedade e preocupação excessiva com detalhes.<br>• Sentimental: Sentimentos intensos que variam entre o amor profundo e o ódio visceral, dependendo da clareza da situação. Há uma busca por transparência total na relação, o que pode gerar conflitos se o parceiro não for igualmente direto. A relação é pautada pela verdade, mas pode faltar suavidade emocional.<br>• Espiritual: Período de grande potência espiritual e clareza de propósito, onde a vontade do indivíduo se alinha com uma força vigorosa. Contudo, existe o risco de excesso de racionalização da fé, o que pode gerar bloqueios ou ansiedade espiritual se não houver um equilíbrio com a intuição e a entrega.",
@@ -508,10 +635,6 @@
                 "Atributo básico": "• Material: Fase de sucesso profissional consolidado através de decisões definitivas e de uma competência inquestionável no uso de ferramentas e estratégias técnicas. O consultor atua como um líder independente e perspicaz que não desiste de seus planos, resultando em conquistas materiais obtidas por esforço próprio e pelo domínio técnico, garantindo que nada do que foi conquistado se perca em meio a crises ou desorganizações.<br>• Mental: Mentalidade analítica, fria e focada obsessivamente no cumprimento de metas intelectuais audaciosas. O indivíduo expressa-se com habilidade e persuasão, agindo com um autocontrole mental que impede passos em falso ou dramatizações inúteis, sentindo-se perfeitamente capaz de solucionar problemas complexos através da lógica pura e da austeridade, mantendo uma postura de superioridade intelectual diante de todos os seus oponentes.<br>• Sentimental: No campo afetivo, indica um relacionamento vivido com racionalidade e pragmatismo, onde o parceiro não dramatiza a relação, mas a encara como um objetivo a ser cumprido com disciplina. Existe fidelidade baseada na honra, embora a expressão do afeto seja bruta ou sisuda, podendo evoluir para vínculos tóxicos e abusivos se o controle emocional se transformine em radicalismo e violência física ou verbal injustificada.<br>• Espiritual: Momento de grande força espiritual disciplinada, onde a vontade individual se alinha a uma potência de reconstrução mística profunda. O consulente possui as ferramentas necessárias para intervir no plano astral com autoridade, mas corre o risco de agir com crueldade ou ingratidão perante a luz, exigindo que seu domínio espiritual seja pautado pela ética para evitar carmas pesados de opressão e violência.",
                 "Atributo diverso": "• Negativo: Indica a perda de autoridade por excesso de rigidez e a queda de um reinado construído sobre o medo e a falta de tato social. Representa uma fase de teimosia irredutível onde o consultor se torna cego para os próprios erros, resultando em uma derrota humilhante causada por sua incapacidade de reconhecer a ajuda alheia e pela sua tendência a ser um líder agressivo e ingrato.<br>• Obstáculo: Ocorre pelo excesso de controle e pela mania de planejar tudo sem dar espaço para a espontaneidade ou para os sentimentos alheios. A busca obsessiva pela razão e pela reconstrução cirúrgica de tudo pode paralisar as relações humanas, transformando a vida em um campo de batalha onde a frieza e o radicalismo impedem a entrada da paz e do bem-estar emocional duradouro.<br>• Orientação/conselho: Lute com inteligência e estratégia para conquistar seus objetivos, mantendo o autocontrole absoluto sobre suas emoções e ações. Batalhe pelo que deseja com disciplina, tome decisões definitivas sem medo de ser bruto se necessário, domine seu território com autoridade e entenda que o foco e a perspicácia são as únicas chaves para reconstruir sua vitória em meio às ruínas atuais."
             }},
-
-            // ==========================================
-            // ARCANOS MENORES - COPAS (C)
-            // ==========================================
             { name: "Ás de Copas", type: "menor", number: "As", imgUrl: `${baseUrl}C01.jpg`, sections: {
                 "Núcleo": "• Essência: Amar, transbordar, iniciar, nutrir.<br>• Definição: Representa a potência máxima do sentimento, da alegria e da fertilidade emocional. É o arcano da autorrealização e da plenitude, onde o amor em todas as suas formas (romântico, profissional ou religioso) se manifesta com força vital, trazendo cura, reconciliação e recompensas generosas do destino.<br>• Advertência: Não se deixe levar apenas pela euforia ou pela ostentação de seus afetos; embora a sorte e a abundância estejam presentes, lembre-se de que todo transbordamento exige uma base sólida para não se tornar apenas um momento passageiro de êxtase que se dissipa sem deixar raízes concretas em sua vida.",
                 "Atributo básico": "• Material: Fase de sucesso absoluto e satisfação plena no trabalho, onde o consultor coloca elo afetivo em tudo o que realiza, atraindo sorte e abundância financeira. Há abertura para novos negócios e projetos que trazem recompensas materiais generosas, além de um clima de harmonia com o ambiente social que favorece promoções, ganhos por produções artísticas e uma percepção de prosperidade visível a todos.<br>• Mental: Mentalidade otimista, dinâmica e extremamente criativa, voltada para a compreensão e a receptividade de novas ideias e críticas construtivas. O indivíduo expressa-se com generosidade e plenitude, focando no transbordamento de seus ideais e na restauração da paz interior, agindo com um dinamismo que impulsiona a realização de seus desejos através de uma comunicação fluida, alegre e autêntica perante o mundo.<br>• Sentimental: No campo afetivo, indica o início de um relacionamento profundo, apaixonado e transbordante de carinho, com chances reais de reconciliação e perdão se houver crises passadas. Existe uma nutrição mútua e uma satisfação plena que motiva o casal a demonstrar sua felicidade socialmente, resultando em um envolvimento romântico marcado pela empatia, pelo altruísmo e pela euforia de ter encontrado o amor verdadeiro.<br>• Espiritual: Momento de profunda conexão com o divino e renovação da fé, onde a alma se sente preenchida por uma luz restauradora e generosa. O canal mediúnico está receptivo a bênçãos e curas espirituais, permitindo que o consulente irradie positividade e receba apoio externo do plano astral, vivenciando uma plenitude mística que cura feridas internas e fortalece os propósitos espirituais de longo prazo.",
@@ -582,10 +705,6 @@
                 "Atributo básico": "• Material: Fase de sucesso profissional obtido através de uma rede de contatos influentes e de uma diplomacia fina que soluciona problemas por vias de conversas e negociações. O consultor atua como um mestre da imagem social, agindo com cordialidade e calor humano para atrair investimentos e favores, resultando em um progresso financeiro constante, embora possa ser tentado por caminhos corruptíveis se o ganho pessoal for maior que a ética.<br>• Mental: Mentalidade idealista, intuitiva e dotada de um traquejo social que permite convencer a todos através do carisma e da gentileza. O indivíduo expressa-se de forma dramática e poética, romantizando inclusive os cenários de esforço intelectual, agindo com uma agilidade mental que busca sempre o prazer de ser admirado, sentindo-se seguro ao liderar pelo afeto, embora sofra profundamente quando sua vaidade absoluta é ferida ou ignorada.<br>• Sentimental: No campo afetivo, reflete um relacionamento marcado por bajulações, cantadas e por uma necessidade constante de ser aplaudido e cuidado pelo parceiro. Existe uma química intensa e uma fidelidade baseada na reciprocidade do prazer, onde o homem é fofo e romântico apenas enquanto o cenário lhe agrada, abandonando o vínculo rapidamente se houver irritabilidade ou se ele deixar de ser o centro das atenções.<br>• Espiritual: Momento de espiritualidade profunda e intuitiva, onde a alma se joga nos propósitos de fé com paixão e carisma. O consulente possui uma grande capacidade de harmonizar ambientes espirituais e de atuar como um conselheiro inspirador, vivenciando uma conexão mística que valoriza a beleza dos rituais e o bem-estar espiritual, permitindo que a luz divina se manifeste através de sua sensibilidade refinada.",
                 "Atributo diverso": "• Negativo: Indica a falta de compromisso e a traição de acordos em nome de um novo prazer momentâneo, revelando um caráter inconstante e manipulador. Representa uma fase de vitimismo dramático onde a pessoa se torna mimada e birrenta por não ser contrariada, resultando no abandono de responsabilidades vitais e na perda de influência social por sua óbvia falta de honestidade e de lealdade real.<br>• Obstáculo: Ocorre pelo excesso de hedonismo e pela obsessão em manter a própria imagem de \"bonzinho\" a qualquer custo, o que leva à hipocrisia e à falta de integridade. A pessoa pode se perder em dramatizações inúteis para atrair atenção e tornar-se escrava da bajulação alheia, negligenciando as obrigações práticas e os sentimentos reais dos outros por estar excessivamente focada no próprio umbigo e na sua vaidade doentia.<br>• Orientação/conselho: Confie plenamente em sua intuição, aja com gentileza extrema e utilize seu carisma para conquistar o que deseja de forma diplomática neste momento. Busque seu próprio prazer e satisfação pessoal, seja o centro das atenções com elegância, procure cenários que tragam bem-estar ao seu ego e entenda que o seu traquejo social e a sua capacidade de agradar são as chaves para abrir as portas que você deseja."
             }},
-
-            // ==========================================
-            // ARCANOS MENORES - PAUS (W)
-            // ==========================================
             { name: "Ás de Paus", type: "menor", number: "As", imgUrl: `${baseUrl}W01.jpg`, sections: {
                 "Núcleo": "• Essência: Iniciar, explodir, ousar, expandir.<br>• Definição: Representa a potência máxima de vontade e energia criativa concentrada. É o arcano dos caminhos abertos, da sorte por meritocracia e das grandes oportunidades que exigem ação imediata e engajamento honesto para se transformarem em sucesso absoluto e crescimento em todos os níveis da vida.<br>• Advertência: Não desperdice este clímax de força com impulsividade cega ou falta de consciência; embora você tenha todas as condições para vencer, a realização ainda exige que você faça por onde, lute com determinação e mantenha o entendimento correto do que está sendo vivido para não queimar etapas.",
                 "Atributo básico": "• Material: Fase de abertura total de caminhos profissionais com lucros que rendem e investimentos extremamente férteis. O consultor sente-se motivado a empreender e batalhar, colhendo o sucesso planejado através de um esforço recompensado e de uma produtividade inigualável, resultando em bons negócios e na materialização de projetos que trazem prosperidade e uma nova dinâmica financeira muito vigorosa para sua carreira.<br>• Mental: Mentalidade de autoconfiança absoluta e inteligência brilhante, focada na criação de novas ideias e na descoberta de soluções audaciosas. O indivíduo expressa-se com coragem e clareza, possuindo um entendimento correto da realidade e uma vontade inabalável de fazer acontecer, agindo com um dinamismo intelectual que impulsiona a todos ao seu redor e garante a vitória através da sua capacidade de articular planos.<br>• Sentimental: No campo afetivo, indica uma explosão de paixão intensa e um início de relacionamento marcado pelo entusiasmo e pela química sexual vigorosa. Existe um compromisso honesto e uma energia absoluta que motiva o casal a renascer em um novo padrão de vida, trazendo alegria, virilidade e uma sensação de pureza e verdade que fortalece os vínculos e abre o futuro.<br>• Espiritual: Momento de grande potência mística e ativação do canal mediúnico com pureza e intuição aguçada. A alma vivencia um ritual de passagem significativo, sentindo um influxo de força vital que permite mudar padrões antigos e renascer para uma nova consciência espiritual, exigindo foco e a canalização correta dessa energia absoluta para realizar seus propósitos superiores com sucesso total.",
@@ -657,143 +776,760 @@
                 "Atributo diverso": "• Negativo: Indica a perda de influência por excesso de rigidez ou por uma desmotivação profunda que apaga o seu brilho de liderança natural. Representa uma fase em que a busca pelo sucesso se torna agressiva e indigna, resultando no afastamento de aliados por falta de empatia e na perda de oportunidades de progresso por pura teimosia em não aceitar os limites da realidade e das pessoas.<br>• Obstáculo: Ocorre pelo excesso de controle paternalista e pela mania de querer resolver todos os problemas do mundo sozinho, o que gera um esgotamento físico e mental perigoso. A pessoa pode tornar-se excessivamente severa e bitolada em suas convicções, agindo com uma agressividade \"bem-intencionada\" que afasta o afeto real e transforma a convivência em uma batalha eterna por ideais que ninguém mais suporta seguir.<br>• Orientação/conselho: Assuma seu papel de líder com altivez e dedique-se integralmente aos seus objetivos, agindo com a honradez e a lealdade necessárias para inspirar os outros. Esforce-se para superar qualquer limitação, aceite os desafios com entusiasmo, utilize seu carisma para motivar sua equipe e entenda que sua força de vontade e sua capacidade de agir são as chaves definitivas para o seu sucesso e progresso."
             }}
         ];
+        /* ============================================================
+           PALAVRAS PERSONALIZADAS DO MODO DE TREINO
+           ============================================================ */
+        
+const customPlateWords = {
+    "O Louco": "Desordem",
+    "O Mago": "Movimento",
+    "A Sacerdotisa": "Conserva",
+    "A Imperatriz": "Planejamento",
+    "O Imperador": "Controle",
+    "O Papa": "Ordem",
+    "Os Enamorados": "Negociação",
+    "O Carro": "Avanço",
+    "A Força": "Controle",
+    "O Eremita": "Lentidão",
+    "A Roda da Fortuna": "Interferência",
+    "A Justiça": "Analisa",
+    "O Pendurado": "Carência",
+    "A Morte": "Mudança",
+    "A Temperança": "Adia",
+    "O Diabo": "Manipulação",
+    "A Torre": "Invasão",
+    "A Estrela": "Expectativa",
+    "A Lua": "Hiperdimensiona",
+    "O Sol": "Expõe",
+    "O Julgamento": "Renovação",
+    "O Mundo": "Crescimento",
+    "Ás de Ouros": "Potência, Começo, Realização",
+    "Dois de Ouros": "Adiamento, Impasse, Flexibilidade",
+    "Três de Ouros": "Ajuda, Expansão, Planejamento",
+    "Quatro de Ouros": "Mesquinharia, Apego, Medo",
+    "Cinco de Ouros": "Pobreza, Perdas, Crise",
+    "Seis de Ouros": "Carência, Ajuda, Adiamento",
+    "Sete de Ouros": "Progresso, Recompensa, Paciência",
+    "Oito de Ouros": "Recomeço, Aprimoramento, Dedicação",
+    "Nove de Ouros": "Fertilidade, Satisfação, Recompensa",
+    "Dez de Ouros": "Realização, Família, Segurança",
+    "Pajem de Ouros": "Começo, Esforço, Confiável",
+    "Cavaleiro de Ouros": "Disciplina, Perseverança, Estabilidade",
+    "Rainha de Ouros": "Certeza, Prosperidade, Prudência",
+    "Rei de Ouros": "Materialidade, Provedor, Estabilidade",
+    "Ás de Espadas": "Força, Decisão, Intensidade",
+    "Dois de Espadas": "Conflito, Adversidade, Cegueira",
+    "Três de Espadas": "Decepção, Ruptura, Dor",
+    "Quatro de Espadas": "Paralisia, Esgotamento, Suspensão",
+    "Cinco de Espadas": "Humilhação, Teimosia, Vingança",
+    "Seis de Espadas": "Fuga, Medo, Travessia",
+    "Sete de Espadas": "Trapaça, Estratégia, Burlar",
+    "Oito de Espadas": "Exposição, Humilhação, Prisão",
+    "Nove de Espadas": "Desespero, Angústia, Arrependimento",
+    "Dez de Espadas": "Fim, Ruptura, Radicalismo",
+    "Pajem de Espadas": "Inaptidão, Ofensivo, Deslealdade",
+    "Cavaleiro de Espadas": "Rapidez, Foco, Agressividade",
+    "Rainha de Espadas": "Vingança, Estratégia, Frieza",
+    "Rei de Espadas": "Força mental, Domínio, Autocontrole",
+    "Ás de Copas": "Potência, Abundância, Reconciliação",
+    "Dois de Copas": "Acordo, Reciprocidade, Parceria",
+    "Três de Copas": "Comemoração, Felicidade, Fartura",
+    "Quatro de Copas": "Adiamento, Tédio, Rejeição",
+    "Cinco de Copas": "Vitimismo, Decepção, Perdas",
+    "Seis de Copas": "Saudade, Melancolia, Conservadorismo",
+    "Sete de Copas": "Deslumbramento, Fantasia, Engano",
+    "Oito de Copas": "Abandono, Fracasso, Remorso",
+    "Nove de Copas": "Felicidade, Satisfação, Superação",
+    "Dez de Copas": "Realização, Plenitude, Ilusão",
+    "Pajem de Copas": "Honestidade, Sensibilidade, Conciliação",
+    "Cavaleiro de Copas": "Romance, Empolgação, Futilidade",
+    "Rainha de Copas": "Receptividade, Empatia, Contenção",
+    "Rei de Copas": "Egoísmo, Prazer, Carisma",
+    "Ás de Paus": "Potência, Clímax, Engajamento",
+    "Dois de Paus": "Impasse, Adiamento, Paralisia",
+    "Três de Paus": "Visionário, Expansão, Acordos",
+    "Quatro de Paus": "Celebração, Harmonia, Recompensa",
+    "Cinco de Paus": "Aborrecimento, Competitividade, Desgaste",
+    "Seis de Paus": "Reconhecimento, Exito, Honra",
+    "Sete de Paus": "Esforço, Luta, Foco",
+    "Oito de Paus": "Finalização, Rapidez, Movimento",
+    "Nove de Paus": "Medo, Erro, Atraso, Exaustão",
+    "Dez de Paus": "Luta, Sobrecarga, Superação",
+    "Pajem de Paus": "Propostas, Impulsividade, Proatividade",
+    "Cavaleiro de Paus": "Impulsividade, Coragem, Empolgação",
+    "Rainha de Paus": "Determinação, Generosidade, Magnetismo",
+    "Rei de Paus": "Liderança, Honra, Empatia"
+        };
+
+// Atribui o naipe (suit) a cada arcano menor, com base no nome
+rawData.forEach(card => {
+    if (card.type === 'menor') {
+        if (card.name.includes('Ouros')) card.suit = 'ouros';
+        else if (card.name.includes('Espadas')) card.suit = 'espadas';
+        else if (card.name.includes('Copas')) card.suit = 'copas';
+        else if (card.name.includes('Paus')) card.suit = 'paus';
+    }
+});
+
+
+        /* ============================================================
+           MAPEAMENTO E INJEÇÃO DO DECK RIDER WAITE
+           ============================================================ */
+        const imagensRiderWaite = {
+            // MAIORES
+            "O Louco": "https://trilhasnouniverso.com.br/wp-content/uploads/2024/12/00-scaled.jpg",
+            "O Mago": "https://trilhasnouniverso.com.br/wp-content/uploads/2024/12/01-scaled.jpg",
+            "A Sacerdotisa": "https://trilhasnouniverso.com.br/wp-content/uploads/2024/12/02-scaled.jpg",
+            "A Imperatriz": "https://trilhasnouniverso.com.br/wp-content/uploads/2024/12/03-scaled.jpg",
+            "O Imperador": "https://trilhasnouniverso.com.br/wp-content/uploads/2024/12/04-scaled.jpg",
+            "O Papa": "https://trilhasnouniverso.com.br/wp-content/uploads/2024/12/05-scaled.jpg",
+            "Os Enamorados": "https://trilhasnouniverso.com.br/wp-content/uploads/2024/12/06-scaled.jpg",
+            "O Carro": "https://trilhasnouniverso.com.br/wp-content/uploads/2024/12/07-scaled.jpg",
+            "A Força": "https://trilhasnouniverso.com.br/wp-content/uploads/2024/12/08-scaled.jpg",
+            "O Eremita": "https://trilhasnouniverso.com.br/wp-content/uploads/2024/12/09-scaled.jpg",
+            "A Roda da Fortuna": "https://trilhasnouniverso.com.br/wp-content/uploads/2024/12/10-scaled.jpg",
+            "A Justiça": "https://trilhasnouniverso.com.br/wp-content/uploads/2024/12/11-scaled.jpg",
+            "O Pendurado": "https://trilhasnouniverso.com.br/wp-content/uploads/2024/12/12-scaled.jpg",
+            "A Morte": "https://trilhasnouniverso.com.br/wp-content/uploads/2024/12/13-scaled.jpg",
+            "A Temperança": "https://trilhasnouniverso.com.br/wp-content/uploads/2024/12/14-scaled.jpg",
+            "O Diabo": "https://trilhasnouniverso.com.br/wp-content/uploads/2024/12/15-scaled.jpg",
+            "A Torre": "https://trilhasnouniverso.com.br/wp-content/uploads/2024/12/16-scaled.jpg",
+            "A Estrela": "https://trilhasnouniverso.com.br/wp-content/uploads/2024/12/17-scaled.jpg",
+            "A Lua": "https://trilhasnouniverso.com.br/wp-content/uploads/2024/12/18-scaled.jpg",
+            "O Sol": "https://trilhasnouniverso.com.br/wp-content/uploads/2024/12/19-scaled.jpg",
+            "O Julgamento": "https://trilhasnouniverso.com.br/wp-content/uploads/2024/12/20-scaled.jpg",
+            "O Mundo": "https://trilhasnouniverso.com.br/wp-content/uploads/2024/12/21-scaled.jpg",
+
+            // PAUS
+            "Ás de Paus": "https://trilhasnouniverso.com.br/wp-content/uploads/2024/12/01-4.jpg",
+            "Dois de Paus": "https://trilhasnouniverso.com.br/wp-content/uploads/2024/12/02-4.jpg",
+            "Três de Paus": "https://trilhasnouniverso.com.br/wp-content/uploads/2024/12/03-4.jpg",
+            "Quatro de Paus": "https://trilhasnouniverso.com.br/wp-content/uploads/2024/12/04-4.jpg",
+            "Cinco de Paus": "https://trilhasnouniverso.com.br/wp-content/uploads/2024/12/05-4.jpg",
+            "Seis de Paus": "https://trilhasnouniverso.com.br/wp-content/uploads/2024/12/06-4.jpg",
+            "Sete de Paus": "https://trilhasnouniverso.com.br/wp-content/uploads/2024/12/07-4.jpg",
+            "Oito de Paus": "https://trilhasnouniverso.com.br/wp-content/uploads/2024/12/08-4.jpg",
+            "Nove de Paus": "https://trilhasnouniverso.com.br/wp-content/uploads/2024/12/09-4.jpg",
+            "Dez de Paus": "https://trilhasnouniverso.com.br/wp-content/uploads/2024/12/10-4.jpg",
+            "Pajem de Paus": "https://trilhasnouniverso.com.br/wp-content/uploads/2024/12/Page-3-scaled.jpg",
+            "Cavaleiro de Paus": "https://trilhasnouniverso.com.br/wp-content/uploads/2024/12/Knight-2-scaled.jpg",
+            "Rainha de Paus": "https://trilhasnouniverso.com.br/wp-content/uploads/2024/12/Queen-3-scaled.jpg",
+            "Rei de Paus": "https://trilhasnouniverso.com.br/wp-content/uploads/2024/12/King-3-scaled.jpg",
+
+            // ESPADAS
+            "Ás de Espadas": "https://trilhasnouniverso.com.br/wp-content/uploads/2024/12/01-3.jpg",
+            "Dois de Espadas": "https://trilhasnouniverso.com.br/wp-content/uploads/2024/12/02-3.jpg",
+            "Três de Espadas": "https://trilhasnouniverso.com.br/wp-content/uploads/2024/12/03-3.jpg",
+            "Quatro de Espadas": "https://trilhasnouniverso.com.br/wp-content/uploads/2024/12/04-3.jpg",
+            "Cinco de Espadas": "https://trilhasnouniverso.com.br/wp-content/uploads/2024/12/05-3.jpg",
+            "Seis de Espadas": "https://trilhasnouniverso.com.br/wp-content/uploads/2024/12/06-3.jpg",
+            "Sete de Espadas": "https://trilhasnouniverso.com.br/wp-content/uploads/2024/12/07-3.jpg",
+            "Oito de Espadas": "https://trilhasnouniverso.com.br/wp-content/uploads/2024/12/08-3.jpg",
+            "Nove de Espadas": "https://trilhasnouniverso.com.br/wp-content/uploads/2024/12/09-3.jpg",
+            "Dez de Espadas": "https://trilhasnouniverso.com.br/wp-content/uploads/2024/12/10-3.jpg",
+            "Pajem de Espadas": "https://trilhasnouniverso.com.br/wp-content/uploads/2024/12/Page-2-scaled.jpg",
+            "Cavaleiro de Espadas": "https://trilhasnouniverso.com.br/wp-content/uploads/2024/12/Knight-1-scaled.jpg",
+            "Rainha de Espadas": "https://trilhasnouniverso.com.br/wp-content/uploads/2024/12/Queen-2-scaled.jpg",
+            "Rei de Espadas": "https://trilhasnouniverso.com.br/wp-content/uploads/2024/12/King-2-scaled.jpg",
+
+            // OUROS
+            "Ás de Ouros": "https://trilhasnouniverso.com.br/wp-content/uploads/2024/12/01-2.jpg",
+            "Dois de Ouros": "https://trilhasnouniverso.com.br/wp-content/uploads/2024/12/02-2.jpg",
+            "Três de Ouros": "https://trilhasnouniverso.com.br/wp-content/uploads/2024/12/03-2.jpg",
+            "Quatro de Ouros": "https://trilhasnouniverso.com.br/wp-content/uploads/2024/12/04-2.jpg",
+            "Cinco de Ouros": "https://trilhasnouniverso.com.br/wp-content/uploads/2024/12/05-2.jpg",
+            "Seis de Ouros": "https://trilhasnouniverso.com.br/wp-content/uploads/2024/12/06-2.jpg",
+            "Sete de Ouros": "https://trilhasnouniverso.com.br/wp-content/uploads/2024/12/07-2.jpg",
+            "Oito de Ouros": "https://trilhasnouniverso.com.br/wp-content/uploads/2024/12/08-2.jpg",
+            "Nove de Ouros": "https://trilhasnouniverso.com.br/wp-content/uploads/2024/12/09-2.jpg",
+            "Dez de Ouros": "https://trilhasnouniverso.com.br/wp-content/uploads/2024/12/10-2.jpg",
+            "Pajem de Ouros": "https://trilhasnouniverso.com.br/wp-content/uploads/2024/12/Page-1-scaled.jpg",
+            "Cavaleiro de Ouros": "https://trilhasnouniverso.com.br/wp-content/uploads/2024/12/Kinight-scaled.jpg",
+            "Rainha de Ouros": "https://trilhasnouniverso.com.br/wp-content/uploads/2024/12/Queen-1-scaled.jpg",
+            "Rei de Ouros": "https://trilhasnouniverso.com.br/wp-content/uploads/2024/12/King-1-scaled.jpg",
+
+            // COPAS
+            "Ás de Copas": "https://trilhasnouniverso.com.br/wp-content/uploads/2024/12/01-1.jpg",
+            "Dois de Copas": "https://trilhasnouniverso.com.br/wp-content/uploads/2024/12/02-1.jpg",
+            "Três de Copas": "https://trilhasnouniverso.com.br/wp-content/uploads/2024/12/03-1.jpg",
+            "Quatro de Copas": "https://trilhasnouniverso.com.br/wp-content/uploads/2024/12/04-1.jpg",
+            "Cinco de Copas": "https://trilhasnouniverso.com.br/wp-content/uploads/2024/12/05-1.jpg",
+            "Seis de Copas": "https://trilhasnouniverso.com.br/wp-content/uploads/2024/12/06-1.jpg",
+            "Sete de Copas": "https://trilhasnouniverso.com.br/wp-content/uploads/2024/12/07-1.jpg",
+            "Oito de Copas": "https://trilhasnouniverso.com.br/wp-content/uploads/2024/12/08-1.jpg",
+            "Nove de Copas": "https://trilhasnouniverso.com.br/wp-content/uploads/2024/12/09-1.jpg",
+            "Dez de Copas": "https://trilhasnouniverso.com.br/wp-content/uploads/2024/12/10-1.jpg",
+            "Pajem de Copas": "https://trilhasnouniverso.com.br/wp-content/uploads/2024/12/Page-scaled.jpg",
+            "Cavaleiro de Copas": "https://trilhasnouniverso.com.br/wp-content/uploads/2024/12/Knight-scaled.jpg",
+            "Rainha de Copas": "https://trilhasnouniverso.com.br/wp-content/uploads/2024/12/Queen-scaled.jpg",
+            "Rei de Copas": "https://trilhasnouniverso.com.br/wp-content/uploads/2024/12/King-scaled.jpg"
+        };
+
+        // Loop que injeta a URL do Rider Waite em cada carta correspondente do rawData
+        rawData.forEach(card => {
+            if (imagensRiderWaite[card.name]) {
+                card.imgUrlRW = imagensRiderWaite[card.name];
+            }
+        });
+        /* ============================================================ */
+
 
         let activeFilter = 'todos';
+        let activeSuit = 'todos';
         let searchQuery = '';
+        let currentDeck = 'padrao';
+
+        function cardImg(card) {
+            return (currentDeck === 'riderwaite' && card.imgUrlRW) ? card.imgUrlRW : card.imgUrl;
+        }
+
+        function openDeckModal() {
+            document.getElementById('deckModal').classList.remove('hidden');
+            document.getElementById('deckModal').classList.add('flex');
+        }
+        function closeDeckModal() {
+            document.getElementById('deckModal').classList.add('hidden');
+            document.getElementById('deckModal').classList.remove('flex');
+        }
+
+        function setDeck(deck) {
+            currentDeck = deck;
+            document.getElementById('deckOption-padrao').classList.toggle('deck-option-active', deck === 'padrao');
+            document.getElementById('deckOption-riderwaite').classList.toggle('deck-option-active', deck === 'riderwaite');
+            renderCards();
+            if (currentCard && !modal.classList.contains('hidden')) modalImage.src = cardImg(currentCard);
+            renderPracticeBoard();
+            closeDeckModal();
+        }
 
         const cardsGrid = document.getElementById('cardsGrid');
         const cardCount = document.getElementById('cardCount');
         const searchInput = document.getElementById('searchInput');
 
-        // Render Cards
+        const suitLabels = { ouros: 'Ouros', espadas: 'Espadas', copas: 'Copas', paus: 'Paus' };
+
         function renderCards() {
             cardsGrid.innerHTML = '';
-            
             let filtered = rawData.filter(card => {
                 const matchesFilter = activeFilter === 'todos' || card.type === activeFilter;
-                const matchesSearch = card.name.toLowerCase().includes(searchQuery.toLowerCase());
-                return matchesFilter && matchesSearch;
+                const matchesSuit = (activeFilter !== 'menor' || activeSuit === 'todos') || card.suit === activeSuit;
+                const term = searchQuery.toLowerCase();
+                const matchesName = card.name.toLowerCase().includes(term);
+                let matchesContent = false;
+                if (term.length > 1) {
+                    if (card.sections) matchesContent = Object.values(card.sections).some(text => text.toLowerCase().includes(term));
+                    if (!matchesContent && card.planos) matchesContent = JSON.stringify(card.planos).toLowerCase().includes(term);
+                }
+                const matchesSearch = term === '' ? true : (matchesName || matchesContent);
+                return matchesFilter && matchesSuit && matchesSearch;
             });
 
             cardCount.innerText = `${filtered.length} arcano${filtered.length !== 1 ? 's' : ''}`;
 
-            filtered.forEach((card, index) => {
-                const cardHTML = `
-                    <div class="card-hover bg-app-card rounded-2xl border border-app-secondary/30 overflow-hidden cursor-pointer flex flex-col h-56 sm:h-64 shadow-lg transition duration-300" onclick="openModal(${index}, '${card.name}')">
-                        <div class="h-4/5 card-image-placeholder p-2 flex flex-col items-center justify-center">
-                            <img src="${card.imgUrl}" alt="${card.name}" class="card-image shadow-[0_4px_10px_rgba(0,0,0,0.5)]" onerror="this.src='https://placehold.co/200x300/1c143c/a87ff3?text=${card.name.replace(/\s/g, '+')}'">
+            filtered.forEach(card => {
+                const tag = card.type === 'maior' ? `Arcano Maior ${card.number}` : `${card.number} · ${suitLabels[card.suit] || ''}`;
+                const rowHTML = `
+                    <div class="arcana-row card-hover" onclick="openModal('${card.name}')">
+                        <div class="arcana-thumb">
+                            <img src="${cardImg(card)}" alt="${card.name}" onerror="this.src='https://placehold.co/200x300/1c143c/a87ff3?text=${card.name.replace(/\s/g, '+')}'">
                         </div>
-                        <div class="h-1/5 bg-app-surface/80 flex items-center justify-center px-2 z-10 border-t border-app-secondary/30">
-                            <h3 class="font-cinzel text-xs sm:text-sm font-semibold text-white tracking-wider text-center truncate w-full">${card.name.toUpperCase()}</h3>
+                        <div class="arcana-pill">
+                            <h3>${card.name}</h3>
+                            <span class="arcana-tag">${tag}</span>
                         </div>
                     </div>
                 `;
-                cardsGrid.insertAdjacentHTML('beforeend', cardHTML);
+                cardsGrid.insertAdjacentHTML('beforeend', rowHTML);
             });
         }
 
-        // Search Listener
-        searchInput.addEventListener('input', (e) => {
-            searchQuery = e.target.value;
-            renderCards();
-        });
+        searchInput.addEventListener('input', (e) => { searchQuery = e.target.value; renderCards(); });
 
-        // Category Filter
         function filterCards(type) {
             activeFilter = type;
-            
+            const suitFiltersDiv = document.getElementById('suitFilters');
+            if (type === 'menor') { suitFiltersDiv.classList.remove('hidden'); suitFiltersDiv.classList.add('flex'); }
+            else { suitFiltersDiv.classList.add('hidden'); suitFiltersDiv.classList.remove('flex'); activeSuit = 'todos'; updateSuitButtons(); }
             ['todos', 'maior', 'menor'].forEach(t => {
                 const btn = document.getElementById(`btn-${t}`);
-                if(t === type) {
-                    btn.classList.add('pill-active');
-                    btn.classList.remove('bg-app-surface', 'border', 'border-app-secondary/30', 'text-app-textMuted');
-                } else {
-                    btn.classList.remove('pill-active');
-                    btn.classList.add('bg-app-surface', 'border', 'border-app-secondary/30', 'text-app-textMuted');
-                }
+                if (t === type) { btn.classList.add('pill-active'); btn.classList.remove('bg-app-surface', 'border', 'border-app-secondary/30', 'text-app-textMuted'); }
+                else { btn.classList.remove('pill-active'); btn.classList.add('bg-app-surface', 'border', 'border-app-secondary/30', 'text-app-textMuted'); }
             });
-
             renderCards();
         }
 
-        // Modal Logic
+        function filterSuits(suit) { activeSuit = suit; updateSuitButtons(); renderCards(); }
+
+        function updateSuitButtons() {
+            ['todos', 'ouros', 'espadas', 'copas', 'paus'].forEach(s => {
+                const btn = document.getElementById(`btn-suit-${s}`);
+                if (s === activeSuit) { btn.classList.add('pill-active'); btn.classList.remove('bg-app-surface', 'border', 'border-app-secondary/30', 'text-app-textMuted'); }
+                else { btn.classList.remove('pill-active'); btn.classList.add('bg-app-surface', 'border', 'border-app-secondary/30', 'text-app-textMuted'); }
+            });
+        }
+
+        /* ============================================================
+           MODAL + ABAS DE PLANOS
+           ============================================================ */
         const modal = document.getElementById('cardModal');
         const modalContent = document.getElementById('modalContent');
         const modalTitle = document.getElementById('modalTitle');
         const modalNumber = document.getElementById('modalNumber');
         const modalImage = document.getElementById('modalImage');
         const modalBody = document.getElementById('modalBody');
+        const planoTabsEl = document.getElementById('planoTabs');
 
-        function openModal(index, cardName) {
+        const PLANOS_CONFIG = [
+            { key: 'significadosGerais', label: 'Significados Gerais', icon: 'fa-list' },
+            { key: 'vidaMaterial',   label: 'Vida Material',   icon: 'fa-coins' },
+            { key: 'planoMental',    label: 'Plano Mental',    icon: 'fa-brain' },
+            { key: 'vidaAmorosa',    label: 'Vida Amorosa',    icon: 'fa-heart' },
+            { key: 'espiritualidade',label: 'Espiritualidade', icon: 'fa-hands-praying' },
+            { key: 'saude',          label: 'Saúde',           icon: 'fa-heart-pulse' }
+        ];
+
+        let currentCard = null;
+        let activeTab = 'significadosGerais';
+        let activeAmorSub = 'solteiras';
+
+        function hasTabData(card, key) {
+            if (key === 'significadosGerais') return !!(card.sections && Object.keys(card.sections).length > 0);
+            return !!(card.planos && card.planos[key]);
+        }
+
+        function openModal(cardName) {
             const card = rawData.find(c => c.name === cardName);
-            if(!card) return;
-
+            if (!card) return;
+            currentCard = card;
             modalTitle.innerText = card.name;
             modalNumber.innerText = card.type === 'maior' ? `ARCANO MAIOR • ${card.number}` : `ARCANO MENOR`;
-            modalImage.src = card.imgUrl;
-            
-            modalBody.innerHTML = '';
-            
-            for (const [sectionTitle, content] of Object.entries(card.sections)) {
-                
-                // Separa os tópicos que começam com "•" e transforma em cards.
-                const items = content.split(/<br>\s*•\s*|•\s*/).filter(item => item.trim() !== '');
-                
-                let formattedContent = items.map(item => {
-                    let cleanItem = item.replace(/<br>\s*$/g, '').trim();
-                    let parts = cleanItem.split(':'); // Separa a palavra-chave da descrição
-                    
-                    if (parts.length > 1) {
-                        let keyword = parts[0].trim();
-                        let text = parts.slice(1).join(':').trim(); 
-                        
-                        return `
-                        <div class="border border-app-secondary/30 rounded-2xl p-4 mb-3 bg-[#171033] shadow-lg shadow-black/20 relative overflow-hidden group">
-                            <!-- Faixa lateral -->
-                            <div class="absolute left-0 top-0 bottom-0 w-1.5 bg-app-primary/50 group-hover:bg-app-primary transition-colors"></div>
-                            
-                            <span class="text-app-primary font-bold text-sm tracking-widest uppercase block mb-1.5 ml-2">
-                                ${keyword}
-                            </span>
-                            <span class="text-app-textMuted text-sm leading-relaxed font-light block ml-2">
-                                ${text}
-                            </span>
-                        </div>
-                        `;
-                    } else {
-                        // Parágrafo normal se não tiver ":"
-                        return `<p class="text-app-textMuted text-sm leading-relaxed font-light mb-3">${cleanItem}</p>`;
-                    }
-                }).join('');
+            modalImage.src = cardImg(card);
+            const firstFilled = PLANOS_CONFIG.find(p => hasTabData(card, p.key));
+            activeTab = firstFilled ? firstFilled.key : 'significadosGerais';
+            activeAmorSub = 'solteiras';
+            renderPlanoTabs();
+            renderModalBody();
+            modal.classList.remove('hidden');
+            setTimeout(() => { modalContent.classList.remove('translate-y-full'); }, 10);
+        }
 
-                // Renderiza a seção
-                modalBody.innerHTML += `
-                    <div class="mb-6">
-                        <h3 class="text-white font-cinzel font-bold text-xl mb-4 tracking-wide flex items-center gap-3 border-b border-app-secondary/20 pb-2">
-                            <i class="fas fa-moon text-app-primary text-sm"></i> ${sectionTitle.toUpperCase()}
-                        </h3>
-                        <div class="flex flex-col">
-                            ${formattedContent}
-                        </div>
-                    </div>
+        function renderPlanoTabs() {
+            planoTabsEl.innerHTML = PLANOS_CONFIG.map(p => {
+                const isActive = p.key === activeTab;
+                const hasData = hasTabData(currentCard, p.key);
+                return `
+                    <button onclick="selectPlanoTab('${p.key}')"
+                        class="whitespace-nowrap px-4 py-2 rounded-full text-xs font-medium snap-start transition flex items-center gap-1.5 ${isActive ? 'pill-active' : 'bg-app-card border border-app-secondary/30 text-app-textMuted hover:bg-app-card/70'} ${!hasData ? 'opacity-50' : ''}">
+                        <i class="fas ${p.icon} text-[10px]"></i> ${p.label}
+                    </button>
                 `;
+            }).join('');
+        }
+
+        function selectPlanoTab(key) { activeTab = key; activeAmorSub = 'solteiras'; renderPlanoTabs(); renderModalBody(); }
+        function selectAmorSub(sub) { activeAmorSub = sub; renderModalBody(); }
+
+        function fieldBlock(label, text) {
+            if (!text) return '';
+            return `
+              <div class="border border-app-secondary/30 rounded-2xl p-4 mb-3 bg-[#171033] shadow-lg shadow-black/20 relative overflow-hidden group">
+                  <div class="absolute left-0 top-0 bottom-0 w-1.5 bg-app-primary/50 group-hover:bg-app-primary transition-colors"></div>
+                  <span class="text-app-primary font-bold text-sm tracking-widest uppercase block mb-1.5 ml-2">${label}</span>
+                  <span class="text-app-textMuted text-sm leading-relaxed font-light block ml-2">${text}</span>
+              </div>
+            `;
+        }
+
+        function renderModalBody() {
+            const card = currentCard;
+            let html = '';
+            const tabConfig = PLANOS_CONFIG.find(p => p.key === activeTab);
+
+                        if (activeTab === 'significadosGerais') {
+                if (!card.sections || Object.keys(card.sections).length === 0) {
+                    html = `<div class="text-center py-10 text-app-textMuted"><i class="fas fa-moon text-2xl mb-3 opacity-40"></i><p class="text-sm">Significados gerais ainda não foram cadastrados para esta carta.</p></div>`;
+                } else {
+                    for (const [sectionTitle, content] of Object.entries(card.sections)) {
+                        const items = content.split(/<br>\s*•\s*|•\s*/).filter(item => item.trim() !== '');
+                        let formattedContent = items.map(item => {
+                            let cleanItem = item.replace(/<br>\s*$/g, '').trim();
+                            let parts = cleanItem.split(':');
+                            if (parts.length > 1) {
+                                let keyword = parts[0].trim();
+                                let text = parts.slice(1).join(':').trim();
+                                return fieldBlock(keyword, text);
+                            } else {
+                                return `<p class="text-app-textMuted text-sm leading-relaxed font-light mb-3">${cleanItem}</p>`;
+                            }
+                        }).join('');
+
+                        html += `<div class="mb-6"><h3 class="text-white font-cinzel font-bold text-xl mb-4 tracking-wide flex items-center gap-3 border-b border-app-secondary/20 pb-2"><i class="fas fa-moon text-app-primary text-sm"></i> ${sectionTitle.toUpperCase()}</h3><div class="flex flex-col">${formattedContent}</div></div>`;
+                    }
+                }
+                modalBody.innerHTML = html;
+                return;
             }
 
-            modal.classList.remove('hidden');
-            setTimeout(() => {
-                modalContent.classList.remove('translate-y-full');
-            }, 10);
+
+            const planoData = card.planos ? card.planos[activeTab] : null;
+            if (!planoData) {
+                html = `<div class="text-center py-10 text-app-textMuted"><i class="fas fa-moon text-2xl mb-3 opacity-40"></i><p class="text-sm">Conteúdo de "${tabConfig.label}" ainda não foi cadastrado para esta carta.</p></div>`;
+            } else if (activeTab === 'vidaMaterial') {
+                html = `<div class="mb-2"><h3 class="text-white font-cinzel font-bold text-xl mb-4 tracking-wide flex items-center gap-3 border-b border-app-secondary/20 pb-2"><i class="fas fa-coins text-app-primary text-sm"></i> VIDA MATERIAL</h3>
+                    ${fieldBlock('Ativo', planoData.ativo)}${fieldBlock('Inativo', planoData.inativo)}${fieldBlock('Financeiro', planoData.financeiro)}</div>`;
+            } else if (activeTab === 'vidaAmorosa') {
+                const sub = planoData[activeAmorSub];
+                html = `<div class="mb-2"><h3 class="text-white font-cinzel font-bold text-xl mb-4 tracking-wide flex items-center gap-3 border-b border-app-secondary/20 pb-2"><i class="fas fa-heart text-app-primary text-sm"></i> VIDA AMOROSA</h3>
+                    ${planoData.descricao ? fieldBlock('Essência', planoData.descricao) : ''}
+                    <div class="flex gap-2 mb-4">
+                      <button onclick="selectAmorSub('solteiras')" class="px-4 py-1.5 rounded-full text-xs transition ${activeAmorSub==='solteiras' ? 'pill-active' : 'bg-app-card border border-app-secondary/30 text-app-textMuted'}">Pessoas Solteiras</button>
+                      <button onclick="selectAmorSub('compromissadas')" class="px-4 py-1.5 rounded-full text-xs transition ${activeAmorSub==='compromissadas' ? 'pill-active' : 'bg-app-card border border-app-secondary/30 text-app-textMuted'}">Pessoas Compromissadas</button>
+                    </div>
+                    ${sub ? `${fieldBlock('Relação', sub.relacao)}${fieldBlock('Amor', sub.amor)}${fieldBlock('Atitude', sub.atitude)}${fieldBlock('Sexual', sub.sexo)}${fieldBlock('Futuro', sub.futuro)}` : ''}</div>`;
+            } else {
+                html = `<div class="mb-2"><h3 class="text-white font-cinzel font-bold text-xl mb-4 tracking-wide flex items-center gap-3 border-b border-app-secondary/20 pb-2"><i class="fas ${tabConfig.icon} text-app-primary text-sm"></i> ${tabConfig.label.toUpperCase()}</h3>
+                    ${Object.entries(planoData).map(([k, v]) => fieldBlock(k.charAt(0).toUpperCase() + k.slice(1), v)).join('')}</div>`;
+            }
+            modalBody.innerHTML = html;
         }
 
         function closeModal() {
             modalContent.classList.add('translate-y-full');
-            setTimeout(() => {
-                modal.classList.add('hidden');
-            }, 300);
+            setTimeout(() => { modal.classList.add('hidden'); }, 300);
         }
 
-        // Initialize
+        /* ============================================================
+           PRATICAR LEITURA — Jogo de Treino SCR
+           ============================================================ */
+        const houseOrder = ['situacao', 'caminho', 'resultado'];
+        const houseLabel = { situacao: 'Situação', caminho: 'Caminho', resultado: 'Resultado' };
+        let practiceState = { situacao:{maior:null,menor:null}, caminho:{maior:null,menor:null}, resultado:{maior:null,menor:null} };
+        let pendingSlot = null;
+        let choosePanelSuit = 'todos';
+        let activeDrawMode = null; // 'batch' ou 'single'
+
+        const meaningKeys = ['Núcleo', 'Atributo básico', 'Atributo diverso'];
+        let meaningIndex = 0;
+                function cardWord(card) {
+            const custom = customPlateWords[card.name];
+            
+            // Se houver palavras personalizadas cadastradas para a carta
+            if (custom && custom.trim() !== '') {
+                // Separa as palavras pela vírgula, remove os espaços extras e filtra partes vazias
+                const palavras = custom.split(',').map(p => p.trim()).filter(p => p !== '');
+                
+                // Escolhe um índice aleatório dentro da quantidade de palavras
+                const indiceAleatorio = Math.floor(Math.random() * palavras.length);
+                
+                // Retorna a palavra sorteada
+                return palavras[indiceAleatorio];
+            }
+            
+            // Fallback: se não tiver customWord, usa a lógica antiga (Núcleo, etc.)
+            const key = meaningKeys[meaningIndex];
+            return (card.sections && card.sections[key]) ? card.sections[key] : card.name;
+        }
+
+
+        function shuffleArr(arr) { let a=[...arr],c=a.length,r; while(c!==0){ r=Math.floor(Math.random()*c); c--; [a[c],a[r]]=[a[r],a[c]]; } return a; }
+
+        function openPractice() {
+            document.getElementById('practiceModal').classList.remove('hidden');
+            document.getElementById('practiceModal').classList.add('flex');
+            practiceReset();
+        }
+        function closePractice() {
+            document.getElementById('practiceModal').classList.add('hidden');
+            document.getElementById('practiceModal').classList.remove('flex');
+            closeShuffle(); closeChoosePanel(); closeSlotAction();
+        }
+
+        function practiceReset() {
+            practiceState = { situacao:{maior:null,menor:null}, caminho:{maior:null,menor:null}, resultado:{maior:null,menor:null} };
+            meaningIndex = 0;
+            renderPracticeBoard();
+            autoContinue();
+        }
+
+        function practiceRandomAll() {
+            closeShuffle(); closeChoosePanel(); closeSlotAction();
+            document.getElementById('practiceBoard').classList.remove('selecting');
+            const majors = shuffleArr(rawData.filter(c => c.type === 'maior'));
+            const minors = shuffleArr(rawData.filter(c => c.type === 'menor'));
+            houseOrder.forEach((h, i) => { practiceState[h].maior = majors[i]; practiceState[h].menor = minors[i]; });
+            renderPracticeBoard();
+        }
+
+        function firstUnfilled(tipo) { for (let i=0;i<3;i++) if (!practiceState[houseOrder[i]][tipo]) return i; return -1; }
+
+        // Nova lógica: embaralha por lote (Maiores todos de uma vez, depois Menores todos de uma vez)
+        function autoContinue() {
+            let idxM = firstUnfilled('maior');
+            if (idxM !== -1) { startShuffleBatch('maior'); return; }
+            let idxN = firstUnfilled('menor');
+            if (idxN !== -1) { startShuffleBatch('menor'); return; }
+        }
+
+        function renderPracticeBoard() {
+            const board = document.getElementById('practiceBoard');
+            const isSelecting = board.classList.contains('selecting');
+            board.innerHTML = `<div class="scr-row" id="scrRowMaior"></div><div class="scr-row" id="scrRowMenor"></div>`;
+            const rowMaior = document.getElementById('scrRowMaior');
+            const rowMenor = document.getElementById('scrRowMenor');
+            houseOrder.forEach(h => {
+                const colM = document.createElement('div');
+                colM.className = 'scr-col';
+                colM.innerHTML = `
+                    <div class="scr-house-title">${houseLabel[h]}</div>
+                    ${practiceSlotHTML(h,'maior')}
+                    <div class="scr-caption">Arcano Maior</div>
+                `;
+                rowMaior.appendChild(colM);
+
+                const colN = document.createElement('div');
+                colN.className = 'scr-col';
+                colN.innerHTML = `
+                    ${practiceSlotHTML(h,'menor')}
+                    <div class="scr-caption">Arcano Menor</div>
+                `;
+                rowMenor.appendChild(colN);
+            });
+        }
+
+        function practiceSlotHTML(house, tipo) {
+            const card = practiceState[house][tipo];
+            if (!card) {
+                return `<div onclick="onPracticeSlotClick('${house}','${tipo}')" class="scr-slot empty">${tipo==='maior'?'Maior':'Menor'}</div>`;
+            }
+            return `
+                <div onclick="onPracticeSlotClick('${house}','${tipo}')" class="scr-slot">
+                    <img src="${cardImg(card)}" onerror="this.src='https://placehold.co/200x300/1c143c/a87ff3?text=${encodeURIComponent(card.name)}'">
+                    <div class="scr-plate">${cardWord(card)}</div>
+                </div>`;
+        }
+
+        function onPracticeSlotClick(house, tipo) {
+            pendingSlot = { house, tipo };
+            const card = practiceState[house][tipo];
+            document.getElementById('slotActionLabel').innerText = `${houseLabel[house]} — Arcano ${tipo==='maior'?'Maior':'Menor'}`;
+            
+            // Ordem: 1. Escolher, 2. Sortear, 3. Visualizar (se existir carta)
+            let btnHtml = `
+                <button onclick="slotActionChoose('escolher')" class="w-full bg-app-card border border-app-secondary/30 text-white rounded-full py-3 text-xs font-semibold tracking-wide mb-3 uppercase">
+                    <i class="fas fa-hand-pointer mr-1"></i> Escolher da Lista
+                </button>
+                <button onclick="slotActionChoose('sortear')" class="w-full pill-active rounded-full py-3 text-xs font-semibold tracking-wide mb-3 uppercase">
+                    <i class="fas fa-shuffle mr-1"></i> Sortear Aleatoriamente
+                </button>
+            `;
+            if (card) {
+                btnHtml += `
+                <button onclick="slotActionChoose('visualizar')" class="w-full bg-app-surface border border-app-primary/50 text-app-primary rounded-full py-3 text-xs font-semibold tracking-wide mb-3 uppercase shadow-lg">
+                    <i class="fas fa-eye mr-1"></i> Visualizar Significado
+                </button>`;
+            }
+            btnHtml += `<button onclick="closeSlotAction()" class="text-app-textMuted text-xs mt-1 w-full p-2">Cancelar</button>`;
+            
+            document.getElementById('slotActionButtonsWrap').innerHTML = btnHtml;
+
+            const m = document.getElementById('slotActionModal');
+            m.classList.remove('hidden'); m.classList.add('flex');
+        }
+
+        function closeSlotAction() {
+            const m = document.getElementById('slotActionModal');
+            m.classList.add('hidden'); m.classList.remove('flex');
+            pendingSlot = null;
+        }
+
+        function slotActionChoose(mode) {
+            const { house, tipo } = pendingSlot;
+            closeSlotAction();
+            if (mode === 'sortear') startShuffleSingle(house, tipo);
+            else if (mode === 'escolher') openChoosePanel(house, tipo);
+            else if (mode === 'visualizar') openModal(practiceState[house][tipo].name);
+        }
+
+        /* ---------- Sorteio Batch (Embaralha uma vez para Maiores, e uma vez para Menores) ---------- */
+        function startShuffleBatch(tipo) {
+            closeChoosePanel();
+            document.getElementById('practiceBoard').classList.add('selecting');
+            const panel = document.getElementById('shufflePanel');
+            const grid = document.getElementById('shuffleGrid');
+            document.getElementById('shuffleTitle').innerText = `Sorteio — Arcanos ${tipo==='maior'?'Maiores':'Menores'}`;
+            panel.classList.remove('hidden');
+            panel.classList.add('flex');
+            
+            grid.innerHTML = '<div class="shuffle-wrap"></div>';
+            grid.className = "w-full flex-1 min-h-0 overflow-y-auto";
+            const wrap = grid.querySelector('.shuffle-wrap');
+            for (let i=0;i<10;i++) {
+                const c = document.createElement('div');
+                c.className = 'shuffle-card';
+                c.style.animationDelay = (i*0.09)+'s';
+                wrap.appendChild(c);
+            }
+            setTimeout(() => renderShuffleSpreadBatch(tipo), 1000);
+        }
+
+        function renderShuffleSpreadBatch(tipo) {
+            const grid = document.getElementById('shuffleGrid');
+            grid.innerHTML = '';
+            grid.className = tipo === 'menor' ? "w-full flex-1 min-h-0 overflow-y-auto flex flex-wrap gap-1 justify-center px-1" : "w-full flex-1 min-h-0 overflow-y-auto flex flex-wrap gap-2 justify-center px-1";
+            
+            const pool = shuffleArr(rawData.filter(c => c.type === tipo));
+            pool.forEach(card => {
+                const back = document.createElement('div');
+                back.className = 'back-card';
+                if (tipo === 'menor') {
+                    back.style.width = '24px';
+                    back.style.height = '42px';
+                    back.innerHTML = '<i class="fas fa-star-of-life text-[8px]"></i>';
+                } else {
+                    back.innerHTML = '<i class="fas fa-star-of-life text-[10px]"></i>';
+                }
+                back.onclick = function() {
+                    const idx = firstUnfilled(tipo);
+                    if (idx !== -1) {
+                        practiceState[houseOrder[idx]][tipo] = card;
+                        this.style.visibility = 'hidden';
+                        renderPracticeBoard();
+                        
+                        // Checa se terminaram de ser escolhidos
+                        if (firstUnfilled(tipo) === -1) {
+                            closeShuffle();
+                            if (tipo === 'maior') {
+                                // Troca automaticamente para os arcanos menores se for o caso
+                                setTimeout(() => { autoContinue(); }, 400); 
+                            }
+                        }
+                    }
+                };
+                grid.appendChild(back);
+            });
+        }
+
+        /* ---------- Sorteio individual (quando selecionado em slot único) ---------- */
+        function startShuffleSingle(house, tipo) {
+            closeChoosePanel();
+            document.getElementById('practiceBoard').classList.add('selecting');
+            const panel = document.getElementById('shufflePanel');
+            const grid = document.getElementById('shuffleGrid');
+            document.getElementById('shuffleTitle').innerText = `Sorteio — ${houseLabel[house]} (${tipo==='maior'?'Maior':'Menor'})`;
+            panel.classList.remove('hidden');
+            panel.classList.add('flex');
+            
+            grid.innerHTML = '<div class="shuffle-wrap"></div>';
+            grid.className = "w-full flex-1 min-h-0 overflow-y-auto";
+            const wrap = grid.querySelector('.shuffle-wrap');
+            for (let i=0;i<10;i++) {
+                const c = document.createElement('div');
+                c.className = 'shuffle-card';
+                c.style.animationDelay = (i*0.09)+'s';
+                wrap.appendChild(c);
+            }
+            setTimeout(() => {
+                grid.innerHTML = '';
+                grid.className = tipo === 'menor' ? "w-full flex-1 min-h-0 overflow-y-auto flex flex-wrap gap-1 justify-center px-1" : "w-full flex-1 min-h-0 overflow-y-auto flex flex-wrap gap-2 justify-center px-1";
+                const pool = shuffleArr(rawData.filter(c => c.type === tipo));
+                pool.forEach(card => {
+                    const back = document.createElement('div');
+                    back.className = 'back-card';
+                    if (tipo === 'menor') {
+                        back.style.width = '24px';
+                        back.style.height = '42px';
+                        back.innerHTML = '<i class="fas fa-star-of-life text-[8px]"></i>';
+                    } else {
+                        back.innerHTML = '<i class="fas fa-star-of-life text-[10px]"></i>';
+                    }
+                    back.onclick = function() {
+                        practiceState[house][tipo] = card;
+                        closeShuffle();
+                        renderPracticeBoard();
+                        // Volta pro batch caso hajam mais slots vazios
+                        autoContinue();
+                    };
+                    grid.appendChild(back);
+                });
+            }, 1000);
+        }
+
+        function closeShuffle() {
+            document.getElementById('practiceBoard').classList.remove('selecting');
+            const panel = document.getElementById('shufflePanel');
+            panel.classList.add('hidden');
+            panel.classList.remove('flex');
+        }
+
+        /* ---------- Escolher da lista (cartas visíveis) ---------- */
+        function openChoosePanel(house, tipo) {
+            closeShuffle();
+            document.getElementById('practiceBoard').classList.add('selecting');
+            choosePanelSuit = 'todos';
+            const panel = document.getElementById('choosePanel');
+            panel.classList.remove('hidden');
+            panel.classList.add('flex');
+            renderChoosePanel(house, tipo);
+        }
+
+        function renderChoosePanel(house, tipo) {
+            document.getElementById('choosePanelTitle').innerText = `Escolher — ${houseLabel[house]} · Arcano ${tipo==='maior'?'Maior':'Menor'}`;
+            const suitsEl = document.getElementById('choosePanelSuits');
+            const gridEl = document.getElementById('choosePanelGrid');
+            
+            // Para as 56 cartas caberem perfeitamente
+            if (tipo === 'menor') {
+                suitsEl.classList.remove('hidden'); suitsEl.classList.add('flex');
+                const suits = [['todos','Todos'],['ouros','Ouros'],['espadas','Espadas'],['copas','Copas'],['paus','Paus']];
+                suitsEl.innerHTML = suits.map(([k,l]) => `<button onclick="setChooseSuit('${house}','${tipo}','${k}')" class="whitespace-nowrap px-3 py-1 rounded-full text-[0.65rem] ${choosePanelSuit===k?'pill-active':'bg-app-card border border-app-secondary/30 text-app-textMuted'}">${l}</button>`).join('');
+                
+                    gridEl.className = 'grid grid-cols-8 sm:grid-cols-10 gap-1 pr-1 pb-4 flex-1 min-h-0 overflow-y-auto';
+} else { 
+    suitsEl.classList.add('hidden'); suitsEl.classList.remove('flex'); 
+    gridEl.className = 'grid grid-cols-4 sm:grid-cols-6 gap-2 pr-1 pb-4 flex-1 min-h-0 overflow-y-auto';
+}
+
+
+            let pool = rawData.filter(c => c.type === tipo);
+            if (tipo === 'menor' && choosePanelSuit !== 'todos') pool = pool.filter(c => c.suit === choosePanelSuit);
+
+            gridEl.innerHTML = pool.map(card => `
+                <div onclick="chooseCard('${house}','${tipo}','${encodeURIComponent(card.name)}')" class="cursor-pointer flex flex-col items-center card-hover">
+                    <div class="w-full aspect-[0.62] rounded-md overflow-hidden border border-app-secondary/40 shadow-sm">
+                        <img src="${cardImg(card)}" class="w-full h-full object-cover" onerror="this.src='https://placehold.co/200x300/1c143c/a87ff3?text=${encodeURIComponent(card.name)}'">
+                    </div>
+                    ${tipo === 'maior' ? `<span class="text-[0.45rem] text-app-textMuted text-center mt-1 leading-tight">${card.name}</span>` : ''}
+                </div>
+            `).join('');
+        }
+
+        function setChooseSuit(house, tipo, suit) { choosePanelSuit = suit; renderChoosePanel(house, tipo); }
+        
+        function chooseCard(house, tipo, nameEncoded) {
+            const card = rawData.find(c => c.name === decodeURIComponent(nameEncoded));
+            if (!card) return;
+            practiceState[house][tipo] = card;
+            closeChoosePanel();
+            renderPracticeBoard();
+            autoContinue(); // Continua o fluxo caso haja mais buracos
+        }
+
+        function closeChoosePanel() {
+            document.getElementById('practiceBoard').classList.remove('selecting');
+            const panel = document.getElementById('choosePanel');
+            panel.classList.add('hidden');
+            panel.classList.remove('flex');
+        }
+
         renderCards();
+
+
+function toggleMeaning() {
+    // Avança o índice para alternar a palavra
+    meaningIndex++;
+    // Re-renderiza o tabuleiro de treino para atualizar as placas de todas as cartas
+    renderPracticeBoard();
+}
 
     </script>
 </body>
