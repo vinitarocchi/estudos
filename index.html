@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Tarot - Estude, Compreenda, Integre</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
@@ -42,6 +42,13 @@
             padding: 0;
             overflow-x: hidden;
             -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+        }
+        /* Evita o gesto nativo de "dar zoom com dois toques rápidos" do
+           navegador mobile, que atrapalhava cliques rápidos em botões
+           (ex: clicar várias vezes seguidas em "Significado"). */
+        button, .quiz-option, .deck-option, [onclick] {
+            touch-action: manipulation;
         }
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: #110b29; }
@@ -58,6 +65,14 @@
         .card-image-placeholder { position: relative; overflow: hidden; border-radius: 1rem; }
         .card-image { width: 100%; height: 100%; object-fit: cover; border-radius: 1rem; }
         .pill-active { background: linear-gradient(90deg, #a87ff3, #d0a4ff); color: #110b29; font-weight: 600; }
+
+        /* ---- switch estilo iOS (toggle liga/desliga) ---- */
+        .ios-switch-wrap { display:flex; align-items:center; gap:6px; }
+        .ios-switch { position:relative; width:38px; height:22px; border-radius:9999px; background:rgba(108,83,158,.5); border:1px solid rgba(168,127,243,.35); cursor:pointer; transition:background .25s ease; flex-shrink:0; }
+        .ios-switch.on { background: linear-gradient(90deg, #a87ff3, #d0a4ff); border-color: transparent; }
+        .ios-switch .ios-switch-knob { position:absolute; top:2px; left:2px; width:16px; height:16px; border-radius:50%; background:#fff; box-shadow:0 1px 3px rgba(0,0,0,.4); transition:transform .25s cubic-bezier(0.34,1.56,0.64,1); }
+        .ios-switch.on .ios-switch-knob { transform: translateX(16px); }
+        .ios-switch-label { font-size:.6rem; font-weight:600; letter-spacing:.05em; text-transform:uppercase; color:#fff; white-space:nowrap; }
         .moon-phases { display: flex; justify-content: center; align-items: center; gap: 12px; color: #f7e0a3; font-size: 1.2rem; margin-bottom: 10px; }
         .moon-phases i:nth-child(3) { font-size: 1.8rem; text-shadow: 0 0 15px rgba(247, 224, 163, 0.6); }
         .card-hover:active { transform: scale(0.95); }
@@ -431,7 +446,7 @@
             </div>
             <div class="px-8 pb-4 flex justify-between items-start border-b border-white/5">
                 <div class="flex items-center gap-4">
-                    <img id="modalImage" src="" alt="" class="w-16 h-24 object-cover rounded-lg border border-app-secondary/50">
+                    <img id="modalImage" src="" alt="" onclick="openImageViewer()" class="w-16 h-24 object-cover rounded-lg border border-app-secondary/50 cursor-pointer">
                     <div>
                         <span id="modalNumber" class="font-cinzel text-app-primary text-sm font-bold tracking-widest"></span>
                         <h2 id="modalTitle" class="font-cinzel text-2xl font-bold text-white mt-1"></h2>
@@ -448,9 +463,22 @@
         </div>
     </div>
 
+    <!-- Visualizador de imagem em tela cheia + salvar imagem -->
+    <div id="imageViewerModal" class="fixed inset-0 z-[350] hidden flex-col items-center justify-center bg-black/90 backdrop-blur-sm">
+        <button onclick="closeImageViewer()" class="absolute top-5 right-5 w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-white z-10">
+            <i class="fas fa-times"></i>
+        </button>
+        <img id="imageViewerImg" src="" alt="" class="max-w-[88vw] max-h-[70vh] object-contain rounded-xl border border-app-secondary/40 shadow-2xl">
+        <p id="imageViewerName" class="text-white font-cinzel text-sm tracking-widest uppercase mt-4"></p>
+        <a id="imageViewerSaveBtn" href="" download target="_blank" rel="noopener" class="mt-5 inline-flex items-center gap-2 bg-app-primary text-app-bg font-semibold text-xs uppercase tracking-wide px-6 py-3 rounded-full shadow-lg">
+            <i class="fas fa-download"></i> Salvar Imagem
+        </a>
+        <p class="text-app-textMuted text-[0.65rem] text-center mt-3 px-8">Se o download não iniciar sozinho, toque e segure a imagem para salvar.</p>
+    </div>
+
     <!-- ============ PRACTICE MODE (Jogo de Treino SCR) ============ -->
     <div id="practiceModal" class="fixed inset-0 z-50 hidden flex-col">
-        <div class="absolute inset-0 bg-app-bg/95"></div>
+        <div class="absolute inset-0 bg-app-bg"></div>
         
         <div id="practiceScrollWrap" class="relative flex-1 overflow-y-auto scrollbar-hide px-4 pt-8 pb-32">
             <div id="practiceHeader" class="flex justify-between items-center mb-4">
@@ -467,6 +495,12 @@
                         <button onclick="openMeaningMatches()" class="flex items-center gap-1.5 bg-app-surface border border-app-secondary/30 text-white rounded-full px-3 py-1.5 text-[0.6rem] font-semibold tracking-wide uppercase shadow-lg">
                             <i class="fas fa-link"></i> Significados Iguais
                         </button>
+                        <div id="togglePlateMeaningsBtn" class="ios-switch-wrap bg-app-surface border border-app-secondary/30 rounded-full px-3 py-1.5 shadow-lg">
+                            <span class="ios-switch-label">Significados</span>
+                            <div class="ios-switch on" onclick="togglePlateMeanings()">
+                                <div class="ios-switch-knob"></div>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <button onclick="closePractice()" class="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-app-textMuted hover:text-white transition flex-shrink-0">
@@ -985,7 +1019,7 @@ const SIGNIFICADOS_GERAIS_TXT = {
     "Oito de Paus": "• Finalização<br>• Rapidez<br>• Velocidade.<br>• Comportamentos agitados.<br>• Ansiedades quando em plano mental.<br>• Realiza antes da data prevista.<br>• Aquilo que estava parado volta a andar.<br>• Expansão<br>• Ideias.<br>• Afetos.<br>• Viagens longa distância.<br>• Físicas<br>• Aéreas<br>• Astrais<br>• Mentais<br>• Restabelecimento espiritual e emissão de energia a partir do consulente, essa emissão se direciona a realização de conclusão de qyestões de maneira pratica do consulente.<br>• Requer que o consulente saiba controlar a<br>• Primeiro e único arcano kármico do naipe de paus.<br>• Resolução<br>• Comunicação frenética e agitada, sempre curta<br>• Curas<br>• Físicas.<br>• Mentais.<br>• Emocionais.<br>• Espirituais.<br>• Reike<br>• Seisho-no-ie<br>• Vitória<br>• Paixões imediatas<br>• Chegada rápida de notícias<br>• Encomendas.<br>• Documentos.<br>• Notícias inusitadas e surpreendentes.<br>• Sorte<br>• Meritocracia<br>• Upgrades sociais<br>• Surpresa/inusitado<br>• Sempre bom.<br>• Mudança.<br>• Flexibilidade.<br>• Transformações.<br>• Nada ficará como está.<br>• Tomada de atitudes<br>• Persevere.<br>• Seja rápido.<br>• Seja impulsivo.<br>• Decisões impulsivas serão as melhor sucedidas.<br>• Ímpetos.<br>• Upgrade das vitórias do 6<br>• Oferecer propostas<br>• Acordos.<br>• Negociações.<br>• De relacionamento.<br>• Solução<br>• Que remete ao término de um problema.<br>• Término que não é necessariamente o abandono de algo, mas a finalização do problema.<br>• Resiliência<br>• Adaptação rápida que leva ao reposicionamento assertivo e realizador.<br>• Realizador<br>• Realiza com qualquer maior.<br>• Suavidade<br>• Sem dor, naturalmente, mas com velocidade rápida.<br>• Tudo com tranquilidade e facilidade e sem sofrimento.<br>• Naturalidade<br>• Férias<br>• Viagens de avião.<br>• O mundo social favorece realização<br>• Ajuda de pessoas.<br>• Ajuda de leis.<br>• Ajuda de contingências.<br>• Comunicação rápida - internet, troca de mensagens, arcano da internet<br>• Arcano do whatsapp, facebook, telefone, internet. Porque são rápidos.<br>• Twiter, tiktok, porque são curtos.<br>• Prosperidade<br>• Assumir o desafio<br>• Por que mesmo você está nessa luta?<br>• Qual o objetivo final da batalha?<br>• Sempre manter isso no norte!<br>• Também anula as características do maior (em jogos de previsão)<br>• Mas com suavidade e tranquilidade e suavidade, apesar de ser repentino, é sem brutalidade.<br>• Ex.: temperança + 8 de paus no mental para solteiros = finalização rápida de algo que estava sendo enrolado e procrastinado, finaliza a temperança.<br>• Diminui o impacto do maior.<br>• Tudo de forma muito sutil.<br>• No perfil casa 1 da mandala: temperança + 8 de paus = tem a preguiça, mas quer solução rápida, mas vai finalizar e acabar com essa preguiça. No 10 de espadas finaliza com agressão.<br>• Ex.: 10 de espadas, com temperança, tira o sujeito da zona de conforto com brutalidade.<br>• Ponto de virada, finalização, fim, resolução,",
     "Nove de Paus": "• Punir o futuro pelo erro do passado<br>• Medo<br>• Resulta em: não realiza na hora (demora mais).<br>• Medo de errar.<br>• Medo de um novo cenário.<br>• Botar tudo a perder.<br>• Medo de recomeçar.<br>• Revive medos por obstáculos passados.<br>• Sentir-se ameaça por experiências anteriores = paranoias.<br>• Reviver passado.<br>• Não é saudade, mas uma lembrança que comanda a decisão do consulente. Sem nostalgia.<br>• Atraso<br>• Demora mais para comprar a bicicleta, por algo já deu errado e você sabe, e agora você vai se precaver, por isso acontece o atraso.<br>• Gente chata, xarope<br>• Obstáculos<br>• Crise passageira.<br>• Obstáculos superáveis.<br>• Quarentena.<br>• Burocracia.<br>• Chuva.<br>• Trânsito.<br>• Sorte anulada<br>• Mas não tem má sorte.<br>• Exaustão<br>• Desgastado.<br>• Cansaço.<br>• Experiência; Atadura na cabeça, símbolo de um machucado que eu tenho lá de trás, as feridas já estão secas, mas a impressão que existe ainda uma ferida fica, e isso gera medo e receio.; A experiência contém o impulso do elemento como forma de alerta, apesar de poder ser superado o obstáculo pelo consulente, ele revive medos que já deveriam ter sido ressignificados como aprendizado, mas estão sendo vividos como dor. É aqui a grande evolução didática do consulente ao enfrentar os medos internos, o consulente passa a ser seu próprio inimigo.; O que está sendo questionado no momento o consulente já viveu no passado com péssimas experiências, demonstrando repetições de modelos de dor.<br>• Timidez<br>• Introversão.<br>• Recuo.<br>• Retração social.<br>• Recolhimento<br>• Paro de tomar atitudes.<br>• Casa 8 = síndrome de pânico<br>• Defesa<br>• Estar na defensiva.<br>• Um pé atrás.<br>• Recuo e observação.<br>• Obstáculo do passado volta<br>• Preso dentro de si mesmo<br>• Ferida antiga que ainda está aberta<br>• Sensação de opressão e obrigação<br>• Problemas passageiros",
     "Dez de Paus": "• Realiza com muito esforço<br>• Sufocamento.<br>• Opressão.<br>• Hércules/Sansão<br>• Nova fase de vida<br>• O esforço da cobra trocar de pele.<br>• Cansaço<br>• Dedicação<br>• Esforço<br>• Superação de grandes obstáculos<br>• Sobrecarga<br>• Sobrecarrega e as pessoas e aproveitam disso e colocam mais bagagem nele.<br>• Sem tempo para nada..<br>• Assoberbados.<br>• Peso das obrigações está acima do que o consulente supõe.<br>• Excesso de responsabilidades.<br>• Grandes e importantes responsabilidades.<br>• Quer abraçar o mundo com as pernas deliberadamente.<br>• Incapacidade de delegar tarefas.<br>• Os bastões tapam a visão da conquista.<br>• A sobrecarga de tarefas pode fazer o consulente não perceber as conquistas já realizadas e nem vibrar comemorando-as por estar permanentemente atarefado.<br>• Sob pressão<br>• Estresse.<br>• Sabedoria<br>• Compreensão<br>• Reorganização de algum sentido na vida<br>• Buscar independência<br>• Grandes recompensas<br>• Conquistas a custos altíssimos de longa jornada e pesado esforço.<br>• Aceitação<br>• Promessas cumpridas<br>• Super estima a própria capacidade de assumir responsabilidades<br>• Assume responsabilidades dos outros também.<br>• Recomeço<br>• Renovação<br>• Solução de problemas<br>• Rotinas exaustivas<br>• Lealdade<br>• Sem impor aqui o aspecto da fidelidade ou não.<br>• Incômodos<br>• Sensação de que o objetivo parece inatingível<br>• Fadiga<br>• Luta<br>• Batalha com sucesso.<br>• Está tentando restabelecer a vida no geral<br>• Sorte aliada à meritocracia<br>• Honra.<br>• Tudo muda<br>• Frequência.<br>• Paradigma.<br>• Ressignifica.<br>• Se esforça para mudar.<br>• Quando você faz terapia, faz análise, para se curar, é algo lento, trabalhoso, mas muda, reconfigura, reestrutura.",
-    "Pajem de Ouros": "• Quer investir algo, quer iniciar algo<br>• É quando faz a inscrição pra faculdade, é hora que paga matrícula da academia, é hora que você recebe uma dieta, é o começo.<br>• Começo<br>• Primeira iniciativa.<br>• Começa algo que ainda não tem estrutura.<br>• Fundamentais.<br>• Básicos para grandes avanços.<br>• Notícias<br>• Sempre boas.<br>• Cumpre promessas<br>• Não promete além das pernas dele, ele cumpre tudo que diz, deixa claro as bases nas quais ele está estabelecendo as bases.<br>• Mesmo diante de um cenário difícil ele propõem algo possível.<br>• Perspectiva do sucesso<br>• O sucesso só se concretiza com foco, disciolina e manutenção do propósito inicial e atitudes<br>• Bom amigo<br>• Fiel e leal<br>• Relacionamentos.<br>• Empresa.<br>• Veste a camisa.<br>• Tagarela<br>• Bem intencionado<br>• Atencioso<br>• Trabalho<br>• Esforço<br>• Prestimoso<br>• Prestativo<br>• Sente bem estar e prazer em ajudar livremente o outro.<br>• Impulso<br>• Incentivo<br>• Investiga<br>• Analisa<br>• Tradicionalista<br>• Segue protocolos e sistemas sem contestações.<br>• São fiéis a modelos e conservadorismos.<br>• Repetir padrões.<br>• Está confortável em rotinas.<br>• Cuida e conserva o que é material.<br>• Fertilidade<br>• Integridade<br>• Concentração/foco<br>• Novos amigos<br>• Trabalhador<br>• Dá importância de status maior que o fato tem<br>• Glamourização do que faz.<br>• Solenidades.<br>• Impostação.<br>• Ostentação de pequenas coisas.<br>• Meritocrático<br>• Boa memória<br>• Sabe onde está pisando<br>• Ex.: penso em abrir uma loja de cerveja artesanal, já sei como faz as cervejas, já estou vendo pontos de venda, já planejei o nome, já analisei muita coisa.<br>• Situações sólidas.<br>• Convite para oportunidades<br>• Uma terceira pessoa que favorece as coisas, que ajuda, que oferece.<br>• A ajuda/oportunidade vem de fora para o valete.<br>• Ex.: quando vou abrir a loja de cervejas, meu primo fica sabendo e me chama pra fazer sociedade ou me oferece um bom ponto de venda.<br>• Ofertas Concretas.<br>• Confiáveis.<br>• Vantajosas.<br>• Duradouras.<br>• Fértil<br>• Oportuna.<br>• Observador<br>• Gravidez<br>• Bebê.<br>• Ideias.<br>• Projetos.<br>• Tem o início de algo, está plantado.<br>• Convite para algo real (ex.: vamos comprar uma bicicleta nós dois? Dividimos os dias para andar - sempre algo real).<br>• Você tem o que precisa pra obter o que quer",
+    "Pajem de Ouros": "• Quer investir algo, quer iniciar algo<br>• É quando faz a inscrição pra faculdade, é hora que paga matrícula da academia, é hora que você recebe uma dieta, é o começo.<br>• Começo<br>• Primeira iniciativa.<br>• Começa algo que ainda não tem estrutura.<br>• Fundamentais.<br>• Básicos para grandes avanços.<br>• Notícias<br>• Sempre boas.<br>• Cumpre promessas<br>• Não promete além das pernas dele, ele cumpre tudo que diz, deixa claro as bases nas quais ele está estabelecendo as bases.<br>• Mesmo diante de um cenário difícil ele propõem algo possível.<br>• Perspectiva do sucesso<br>• O sucesso só se concretiza com foco, disciolina e manutenção do propósito inicial e atitudes<br>• Bom amigo<br>• Fiel e leal<br>• Relacionamentos.<br>• Empresa.<br>• Veste a camisa.<br>• Tagarela<br>• Bem intencionado<br>• Atencioso<br>• Trabalho<br>• Esforço<br>• Prestimoso<br>• Prestativo<br>• Sente bem estar e prazer em ajudar livremente o outro.<br>• Impulso<br>• Incentivo<br>• Investiga<br>• Analisa<br>• Tradicionalista<br>• Segue protocolos e sistemas sem contestações.<br>• São fiéis a modelos e conservadorismos.<br>• Repetir padrões.<br>• Está confortável em rotinas.<br>• Cuida e conserva o que é material.<br>• Fertilidade<br>• Integridade<br>• Concentração/foco<br>• Novos amigos<br>• Trabalhador<br>• Dá importância de status maior que o fato tem<br>• Glamourização do que faz.<br>• Solenidades.<br>• Impostação.<br>• Ostentação de pequenas coisas.<br>• Meritocrático<br>• Boa memória<br>• Sabe onde está pisando<br>• Ex.: penso em abrir uma loja de cerveja artesanal, já sei como faz as cervejas, já estou vendo pontos de venda, já planejei o nome, já analisei muita coisa.<br>• Situações sólidas.<br>• Convite para oportunidades<br>• Uma terceira pessoa que favorece as coisas, que ajuda, que oferece.<br>• A ajuda/oportunidade vem de fora para o valete.<br>• Ex.: quando vou abrir a loja de cervejas, meu primo fica sabendo e me chama pra fazer sociedade ou me oferece um bom ponto de venda.<br>• Ofertas.<br>• Concretas.<br>• Confiáveis.<br>• Vantajosas.<br>• Duradouras.<br>• Fértil<br>• Oportuna.<br>• Observador<br>• Gravidez<br>• Bebê.<br>• Ideias.<br>• Projetos.<br>• Tem o início de algo, está plantado.<br>• Convite para algo real (ex.: vamos comprar uma bicicleta nós dois? Dividimos os dias para andar - sempre algo real).<br>• Você tem o que precisa pra obter o que quer",
     "Pajem de Espadas": "• \"A grama do vizinho é sempre mais verde que a minha\"<br>• São sempre más notícias (ex.: saiu resultado do processo e você perdeu, não passou na prova do Detran, reprovado no exame de fezes).<br>• Mentiroso<br>• Mente descaradamente e é algo trágico, descarado.<br>• Aspirante a diabo<br>• Queria ser um diabo, mas não tem a mesma competência dele. Queria ser cheio de truques, carismático.<br>• Coloca em questão tudo e bota em dúvida a palavra alheia.<br>• Ex.: \"duvido\" \"aposto que é isso, aposto que é aquilo\".<br>• Evasivo<br>• Que não cumpre o que promete, se ele fala algo, aquilo não acontece.<br>• Sempre traz algo ruim<br>• Notícia ruim.<br>• Acordo ruim.<br>• Promessas nao cumpridas<br>• \"Eu vou namorar vock\", mas nao namora, ele<br>• Pretensioso<br>• A ser inteligente, mas não é.<br>• Sem direção<br>• Olha pra frente e fica com a faca pra traz.<br>• Sem estrutura.<br>• Imaturo<br>• Mimado<br>• Raivoso<br>• Ofensivo<br>• Ingrato<br>• Crítico ao extremo<br>• Egoísta<br>• Frustrado<br>• Auto destrutivo por imprudência<br>• Impetuoso<br>• Toma partido de um lado da questão e vai defender fervorosamente sem ouvir o oponente<br>• Competição inglória<br>• Vaidade<br>• Deslealdade<br>• Se abre oportunidade pra uma traição, adultério, mas depende do maior.<br>• A deslealdade é intrínseca ao arcano, ele prioriza a si mesmo por ego.<br>• Mal humorado<br>• Temperamental.<br>• Não tem autocontrole<br>• Desaforo<br>• Imoral<br>• Reativo<br>• Seduz com má fé<br>• Toma atitudes atabalhoadas<br>• Insensível<br>• Falso<br>• Do contra<br>• Sempre está indo contra a maré.<br>• Obtuso; Não consegue escutar os outros - estou certo custe o que custar.; Elaboração mental curta e restrita.<br>• Pirraça; Se for do meu jeito eu não quero.; Faz pirraça e birra por que ele quer brigar, e ele sempre perde a briga e tudo que ele quer alcançar é ilegal e com truque.; Se irrita quando não respondido de imediato, quando não obtém atenção instantânea do oponente, não suporta ficar no vácuo. Isso aumenta a raiva escalonando o tom da briga.<br>• Sem escrúpulos; Ex.: lua + valete de espadas = vai fazendo macumba pra todo mundo, cada fim de semana pra um cara ficar com ela e depois não quer mais e faz macumba pra todos saírem da vida dela.; Ex.: ele quer namorar e pede em namoro e outro diz que não, então ele faz macumba pra pessoa namorar com ele ou paga pra alguém fazer macumba. Ou ameaça de vazar um nude se a pessoa não namorar com ele. Quando ele consegue alguma coisa é por meios esdrúxulos. E sempre perde o que conquista por meios assim, sempre. Quando conquista.<br>• Rei da fofoca<br>• Maledicente.<br>• Sempre vulgariza o que vê e destrói em fofoca.<br>• Indiscrição.<br>• Escândalos.<br>• Sempre joga tudo no ventilador, o que se refere a ele próprio e aos outros.<br>• Discussão<br>• Verbal extremamente vulgar e ofensiva.<br>• Pode ser física com corte físico.<br>• Stalker<br>• Vê a vida dos outros pra apontar o dedo.<br>• Ele sempre faz as coisas mal feitas e ele acha que outro também é assim, então ele vai criticar o outro, tudo que o outro consegue ele vai colocar defeito.<br>• Curiosidade fútil sobre o poder alheio.<br>• Indiretas<br>• Indiretas nas redes sociais.<br>• Podre<br>• Indireta rasa<br>• Burra<br>• Mico<br>• Provocativo<br>• Espeta.<br>• Causa discussões.<br>• Às vezes ele nem espeta quem ele queria, porque ele olha pra frente e a espadas está pra trás, ou seja, às vezes atinge outras pessoas e gera treta.<br>• Acidentes.<br>• Cortes.<br>• Rupturas.<br>• Situações onde uma necessidade de gesso ou pontos são necessários.<br>• Picuinha<br>• Responde com talvez - se você focar, começar a ter direção e fazer tudo de maneira legal, pode ser que sim. Quase nunca realiza, muito difícil, mas é bom dizer talvez porque ainda há chances de reverter a cagada, então é bom alertar.<br>• Grato<br>• Nego",
     "Pajem de Copas": "• Honestidade<br>• Digno<br>• Boas notícias<br>• São convites, eventos para confraternização (sociais, com família, amigos, sócios, alunos, funcionários e/ou colegas de trabalho). (Ex.:<br>• Algo/alguém nasceu.<br>• O nascimento não é necessariamente de alguém, mas de algum projeto, o proposto. É a notícia que algo deu start, nasceu.<br>• Não há malícias<br>• Convites<br>• Convite social que traz boas notícias.<br>• Compromissos.<br>• Namoro/casamento.<br>• Emprego.<br>• Parceria.<br>• Sociedade.<br>• Compromissos abertos.<br>• \"Vamos ser ficantes?\".<br>• Reconciliar com a vida<br>• Não fica remoendo dores<br>• Proatividade.<br>• Assertividade.<br>• Leal<br>• Sedutor<br>• Restabelecimento da ingenuidade e frescor do amor em; Empreendimentos.<br>• Relacionamento.<br>• Trabalho.<br>• Não carrega mágoas passadas.<br>• Fofo e gentil<br>• Conciliação<br>• Tenta agradar de maneira igual a todos os envolvidos.<br>• Confiável<br>• Passionalidade<br>• Espontâneo<br>• Focado<br>• Tende a enfeitar o pavão<br>• Atua diante do outro na ideia de levantar o ego do outro.<br>• Encorajador, expert em motivação.<br>• Sensível<br>• Às vezes demais.<br>• Enjoado.<br>• Criativo<br>• Aberto e entusiasmado como um artista.<br>• Ex.: \"Ainnn eu gosto tanto de você, faz pra mim?\" \"Ainnnn, ninguém gosta de mim\".<br>• Piá de prédio.<br>• Criado pela vó.<br>• Coragem em se arriscar<br>• Emocionalmente.<br>• Materialmente.<br>• Negociação<br>• Confiança<br>• Harmonia<br>• Desapego<br>• Romântico<br>• Lealdade<br>• Sem maldade<br>• Ingenuidade.<br>• Pureza..<br>• Bem intencionado<br>• Generosidade<br>• Compreensão<br>• Empatia<br>• Propostas<br>• Todas boas.<br>• No valete de ouros ele supera os obstáculos, no valete de copas os obstáculos se anulam, somem da frente dele.<br>• No valete de ouros é trabalho e esforço, no valete de copas é sorte.<br>• A proposta que vem dele é verdadeira, mas é imatura, precisa ser melhor",
     "Pajem de Paus": "• Dignidade<br>• São convites para o futuro e não para o agora (ex.: proposta para algo pra frente - depois do curso de arcanos tem o curso da mandala).<br>• Lealdade<br>• Boas intenções<br>• Mas temos um potencial mais real e mais sustentado na realidade.<br>• Promessas e acordos que tem futuro<br>• Ex.: no valete de copas, o cara que você conheceu na festa de casamento e vai te dar emprego, te dá o cartão de visita, pede pra você enviar currículo e você ainda vai ter que se esforçar pra agendar a entrevista, fazer entrevista e tal. Com o valete de paus é quase instantâneo, dá o cartão e na segunda já fala na secretaria e na semana que vem o rh entra em contato e você já começa.<br>• Vínculos<br>• Vínculos sociais.<br>• Visibilidade.<br>• Ex.: o canal do Youtube que tem mais inscritos, perfil no Linkedin bombando.<br>• O círculo social traz uma ajuda boa.<br>• Propostas<br>• Que vem de fora.<br>• Empolgantes.<br>• Excitantes.<br>• Euforia.<br>• Que motivam fortemente.<br>• Impulsiona o projeto<br>• Tira do limbo projetos paralisados.<br>• Reativa o que já não se dava mais importância.<br>• Tem alguma boa qualidade/talento que precisa ainda ser desenvolvido e ganhar experiência e robustez<br>• Otimista<br>• Confiável<br>• Vigor<br>• Desinibição<br>• Autoconfiança<br>• Comprometido com a própria palavra<br>• Cumplicidade<br>• Entusiasmado<br>• Força<br>• Ousadia<br>• Impetuoso.<br>• Dedicado<br>• Trabalhador<br>• Formiguinha.<br>• Tagarela<br>• Boas notícias inusitadas/não esperadas<br>• Declarações.<br>• Convites.<br>• Propostas de<br>• Emprego,<br>• Relacionamento.<br>• Namoro<br>• Casamento<br>• Ficantes<br>• Parceria.<br>• Novos tratamentos.<br>• Que serão importantes para o futuro, essa concretização depende da postura com que o consulente vai encarar a proposta, maturidade e boas escolhas aqui são fundamentais pra determinar o sucesso ou não.<br>• Agitado<br>• Tudo rápido, tudo ágil demais.<br>• Acelerado.<br>• Impulsivo<br>• Reativo.<br>• Aparenta fogo de palha, mas se esse fogo for bem usado consegue realizar e dar um start.<br>• Olha para os lados, vê outras pessoas, e por impulso é capaz de se relacionar com mais gente apenas pelo elemento \"empolgação e oportunidade\", sabe aqueles \"5 min de bobeira \"é ali que ele se dispersa dentro de um relacionamento.<br>• Um adultério depende do maior, mas a oportunidade desse valete já desperta uma atenção ao jogo inteiro pra observar uma traição.<br>• Reage à \"química sexual\" que se apresenta nesse arcano de forma muito intensa.<br>• A \"química\" dá o start de relacionamento, que podem se desenvolver a relações sólidas se forem bem trabalhadas.<br>• Pode confundir empolgado de tesão com amor, se houver maturidade transforma isso em amor, se for encarado com euforia e imaturidade então vira apenas um momento de ficante ocasional que some na lembrança.<br>• Proativo<br>• Arregaça as mangas e vai.<br>• Ex.: se o cara do trabalho não liga pra ele, ele bate lá na porta da empresa pra conversar com ele e lembrar da proposta que ele fez - vai lá buscar o emprego dele.<br>• O futuro já está mais bem definido, não é apenas um primeiro contato",
@@ -1750,6 +1784,27 @@ rawData.forEach(card => {
             setTimeout(() => { modalContent.classList.remove('translate-y-full'); }, 10);
         }
 
+        // Abre a imagem da carta atualmente exibida no modal em tela cheia,
+        // com opção de salvar/baixar a imagem.
+        function openImageViewer() {
+            if (!currentCard) return;
+            const url = cardImg(currentCard);
+            document.getElementById('imageViewerImg').src = url;
+            document.getElementById('imageViewerName').innerText = currentCard.name;
+            const saveBtn = document.getElementById('imageViewerSaveBtn');
+            saveBtn.href = url;
+            saveBtn.setAttribute('download', currentCard.name.replace(/\s+/g, '_') + '.jpg');
+            const viewer = document.getElementById('imageViewerModal');
+            viewer.classList.remove('hidden');
+            viewer.classList.add('flex');
+        }
+
+        function closeImageViewer() {
+            const viewer = document.getElementById('imageViewerModal');
+            viewer.classList.add('hidden');
+            viewer.classList.remove('flex');
+        }
+
         function renderPlanoTabs() {
             planoTabsEl.innerHTML = PLANOS_CONFIG.map(p => {
                 const isActive = p.key === activeTab;
@@ -1866,6 +1921,7 @@ rawData.forEach(card => {
         const meaningKeys = ['Núcleo', 'Atributo básico', 'Atributo diverso'];
         let meaningIndex = 0;
         let equalMeaningsMode = false;
+        let showPlateMeanings = true; // liga/desliga a exibição dos significados embaixo das cartas no modo de treino
 
         // Extrai as palavras-chave da linha "Essência:" dentro do Núcleo de cada carta,
         // usadas como alternativas extras quando só há 1 palavra cadastrada em customPlateWords.
@@ -1882,18 +1938,34 @@ rawData.forEach(card => {
         function cardWord(card) {
             const custom = customPlateWords[card.name];
             let palavras = [];
+            const seen = new Set();
+
+            const addWord = (w) => {
+                if (!w) return;
+                const trimmed = w.trim();
+                if (!trimmed) return;
+                const key = trimmed.toLowerCase();
+                if (seen.has(key)) return;
+                seen.add(key);
+                palavras.push(trimmed);
+            };
 
             // Palavras personalizadas cadastradas para a carta
             if (custom && custom.trim() !== '') {
-                palavras = custom.split(',').map(p => p.trim()).filter(p => p !== '');
+                custom.split(',').forEach(addWord);
             }
 
-            // Se só existir 1 palavra cadastrada (caso comum dos Arcanos Maiores),
-            // completa com as palavras da Essência para garantir variação ao trocar o significado
+            // Acrescenta os significados de palavra única extraídos do material
+            // de estudo (arcanos menores), pra ter bem mais opções além das 3
+            // palavras cadastradas manualmente.
+            const docWords = CARD_SINGLE_WORDS[card.name];
+            if (docWords) docWords.forEach(addWord);
+
+            // Se ainda restar só 1 palavra (caso comum dos Arcanos Maiores, que
+            // não têm CARD_SINGLE_WORDS), completa com as palavras da Essência
+            // para garantir variação ao trocar o significado.
             if (palavras.length <= 1) {
-                extractEssenceWords(card).forEach(w => {
-                    if (!palavras.includes(w)) palavras.push(w);
-                });
+                extractEssenceWords(card).forEach(addWord);
             }
 
             if (palavras.length === 0) return card.name;
@@ -1970,6 +2042,102 @@ rawData.forEach(card => {
         let quizAdvanceTimer = null;
         let quizBag = []; // "baralho" embaralhado: garante que toda carta apareça uma vez antes de repetir
 
+        // Palavras/frases usadas SOMENTE pelo Modo Quiz: os 6 primeiros
+        // significados de cada carta (permitindo frases de até 5 palavras),
+        // na ordem em que aparecem no material de estudo.
+        const QUIZ_FIRST6_WORDS = {
+            "O Louco": ["Desordem", "Ousar", "Evoluir", "Expandir", "Partir"],
+            "O Mago": ["Movimento", "Criar", "Iniciar", "Aspirar", "Expectar"],
+            "A Sacerdotisa": ["Conserva", "Refletir", "Conhecer", "Analisar", "Estudar"],
+            "A Imperatriz": ["Planejamento", "Deduzir", "Cumprir", "Produzir", "Transmitir"],
+            "O Imperador": ["Controle", "Concentrar", "Poder", "Realizar", "Vencer"],
+            "O Papa": ["Ordem", "Ordenar", "Disciplinar", "Cumprir", "Crer"],
+            "Os Enamorados": ["Negociação", "Escolher", "Reunir", "Desejar", "Harmonizar"],
+            "O Carro": ["Avanço", "Direcionar", "Desenvolver", "Querer", "Progredir"],
+            "A Força": ["Controle", "Controlar", "Dominar", "Conter", "Conseguir"],
+            "O Eremita": ["Lentidão", "Saber", "Pesquisar", "Revelar", "Ensinar"],
+            "A Roda da Fortuna": ["Interferência", "Transitar", "Mudar", "Atuar", "Experimentar"],
+            "A Justiça": ["Analisa", "Avaliar", "Julgar", "Redefinir", "Equilibrar"],
+            "O Pendurado": ["Carência", "Resignar", "Renunciar", "Calar", "Paralisar"],
+            "A Morte": ["Mudança", "Modificar", "Alterar", "Terminar", "Transformar"],
+            "A Temperança": ["Adia", "Conciliar", "Harmonizar", "Renovar", "Esperar"],
+            "O Diabo": ["Manipulação", "Desejar", "Possuir", "Construir", "Ter"],
+            "A Torre": ["Invasão", "Dissolver", "Libertar", "Romper", "Revolucionar"],
+            "A Estrela": ["Expectativa", "Esperançar", "Crer", "Continuar", "Libertar"],
+            "A Lua": ["Hiperdimensiona", "Autoconhecer", "Assimilar", "Discernir", "Perceber"],
+            "O Sol": ["Expõe", "Realizar", "Desfrutar", "Regozijar", "Progredir"],
+            "O Julgamento": ["Renovação", "Transcender", "Desvelar", "Regenerar", "Curar"],
+            "O Mundo": ["Crescimento", "Sintetizar", "Cumprir", "Facilitar", "Saciar"],
+            "Ás de Ouros": ["Potência", "Começo", "Efetiva (Todo arcano maior)", "Acontece", "Realização", "Materialização"],
+            "Dois de Ouros": ["Adversidades e jogo de cintura/flexibilidade", "Adiamento", "Arcano kármico", "Impasse", "Demora", "Obstáculos, mas não nega"],
+            "Três de Ouros": ["Expansão", "Avanço com ajuda de terceiros", "Ajuda", "Ensinar", "Orientar", "Cooperação"],
+            "Quatro de Ouros": ["Mesquinharia", "Egoísmo", "Medo", "Não arriscamos", "Não brincamos", "Não compramos"],
+            "Cinco de Ouros": ["Pobreza", "Afastamento", "Afastamentos temporários com grandes prejuízos", "Perdas", "De emprego", "De status"],
+            "Seis de Ouros": ["Kármico", "Ajuda:", "Dúvidas", "Que prolonga adiamentos", "Adiamento", "Medo de decidir"],
+            "Sete de Ouros": ["Colher lucros", "Progresso", "Avanço", "Arcano fominha, sempre quer mais", "Insatisfação", "Porque ele quer mais"],
+            "Oito de Ouros": ["Recomeço", "Renascimento", "Kármico", "Igual ao da justiça", "Profissional", "Sentimento"],
+            "Nove de Ouros": ["Fertilidade", "Sorte", "Satisfação", "Esforço recompensado", "Distinção social", "Sensação de dever cumprido"],
+            "Dez de Ouros": ["Realização", "A longo prazo", "Sucesso", "Concreta", "Família concreta", "Felicidade"],
+            "Ás de Espadas": ["Força", "Ideia fixa", "Potência", "Vigor", "Vontade", "Originalidade"],
+            "Dois de Espadas": ["Um cabo de guerra", "Teimosia", "Oposição", "Conflito", "Orgulho", "Quer mostrar que tem razão"],
+            "Três de Espadas": ["\"Sofrência\"", "Lágrimas", "Tristeza", "Decepção", "Palavra NÃO CUMPRIDA PELO OUTRO", "Descoberta dolorosa"],
+            "Quatro de Espadas": ["Arcano kármico", "Paralisia", "Suspensão por tempo indefinido", "Esgotamento", "Cansaço", "Repouso forçado"],
+            "Cinco de Espadas": ["Humilhação", "Teimosia", "Insiste que está certo", "Vingança", "Mico", "Ex.: casa porque fez macumba"],
+            "Seis de Espadas": ["Abandonar", "Fuga", "Fugir dos problemas", "Ir embora", "Abandono da situação", "Medo"],
+            "Sete de Espadas": ["Diplomacia", "Coragem", "Autoconfiança", "Focado", "Fuga", "Roubo"],
+            "Oito de Espadas": ["Arcano kármico", "SEGUNDA CARTA PIOR DO JOGO", "PERIGO", "Perde a dignidade", "A dignidade é DESTRUÍDA", "Pessoa que trai"],
+            "Nove de Espadas": ["Arcano kármico", "Desespero", "Sem meu emprego?", "Sem minha honra?", "Fatalismos", "Perda"],
+            "Dez de Espadas": ["Fim", "Fim que o cliente executa", "Ruptura", "Elimina a característica do maior", "Livre arbítrio", "Realização com mágoas"],
+            "Ás de Copas": ["Começo", "Efetiva (todo arcano maior)", "Acontece", "Realiza", "Materializa", "Sorte"],
+            "Dois de Copas": ["Momento bom para agir", "Negociação", "Acordo", "Proposta", "Reciprocidade", "Comunicação fluida"],
+            "Três de Copas": ["Sorte", "Hospitaleiros/receptivos", "Liberdade", "Despreocupação", "Encontros festivos", "Happy hour"],
+            "Quatro de Copas": ["Adiamento", "Temporário", "Tédio", "Rejeição", "De oportunidades", "De ideias"],
+            "Cinco de Copas": ["Algo importante foi perdido/quebrou", "Agoniza na dor", "Remorso", "Decepção", "Amargura", "Tristeza"],
+            "Seis de Copas": ["Saudade", "\"'O passado se faz presente\"", "\"Ex vai voltar? Vai.\"", "Melancolia", "Tem função de escapismo/fuga", "Lamentação"],
+            "Sete de Copas": ["Deslumbramento", "Carteirada", "Êxtase", "Entusiasmado", "Euforia", "Trai"],
+            "Oito de Copas": ["Abandona promessas e compromissos", "Desleixo em casa", "Não paga dívidas", "Abandono de valores", "Abandona a moral", "Abandono de si mesmo"],
+            "Nove de Copas": ["Felicidade", "Satisfação", "Superação", "Sorte", "Alegria", "Dignidade"],
+            "Dez de Copas": ["Família afetiva", "Vínculos afetivos", "Realização", "Plenitude", "Felicidade", "Segurança"],
+            "Ás de Paus": ["Sorte", "Meritocracia", "Lute para chegar lá", "Potência", "Clímax", "Oportunidades"],
+            "Dois de Paus": ["Empacado", "Impasse", "Não vai e não vem", "Não faz nada", "Não separa", "Não avança"],
+            "Três de Paus": ["Visionário", "Conquista de espaço/território novo", "Ampliação dos horizontes", "Mente aberta", "Explore", "Lugares"],
+            "Quatro de Paus": ["Celebração", "Comemoração", "Confraternização", "Dentro da mesma sociedade", "Uma etapa já está concluída", "Férias"],
+            "Cinco de Paus": ["Chatice", "Aborrecimento", "Irritações insignificantes", "Tensões", "Obstáculos de pequeno porte", "Superáveis"],
+            "Seis de Paus": ["Glórias do trivial", "Honra", "Fizemos o correto e digno", "Reconhecimento público", "Elogio", "Frutos da vitória"],
+            "Sete de Paus": ["Esforço", "Mental, foco e controle mental", "Vitória irreversível", "Foco", "Claro e bem estruturado", "Perseverança"],
+            "Oito de Paus": ["Finalização", "Rapidez", "Velocidade", "Comportamentos agitados", "Ansiedades quando em plano mental", "Realiza antes da data prevista"],
+            "Nove de Paus": ["Medo", "Medo de errar", "Medo de um novo cenário", "Botar tudo a perder", "Medo de recomeçar", "Revive medos por obstáculos passados"],
+            "Dez de Paus": ["Realiza com muito esforço", "Sufocamento", "Opressão", "Hércules/Sansão", "Nova fase de vida", "Cansaço"],
+            "Pajem de Ouros": ["Começo", "Primeira iniciativa", "Fundamentais", "Básicos para grandes avanços", "Notícias", "Sempre boas"],
+            "Pajem de Espadas": ["Mentiroso", "Aspirante a diabo", "Evasivo", "Sempre traz algo ruim", "Notícia ruim", "Acordo ruim"],
+            "Pajem de Copas": ["Honestidade", "Digno", "Boas notícias", "Algo/alguém nasceu", "Não há malícias", "Convites"],
+            "Pajem de Paus": ["Dignidade", "Lealdade", "Boas intenções", "Vínculos", "Vínculos sociais", "Visibilidade"],
+            "Cavaleiro de Ouros": ["Disciplinado", "Focado no futuro", "Executa", "Concretamente", "Faz acontecer", "Focado"],
+            "Cavaleiro de Espadas": ["Realiza", "Rapidez", "Luta", "Vence", "Conquista", "Inteligente"],
+            "Cavaleiro de Copas": ["Paquerador", "Arcano do xaveco", "Carismático", "Romântico", "Romance", "Não realiza"],
+            "Cavaleiro de Paus": ["Realiza", "Empolgado", "Agitado", "Precipitado", "Impaciente", "Prosperidade"],
+            "Rainha de Ouros": ["Realiza", "Certeira", "Prosperidade e fertilidade", "Fertiliza tudo", "Mantém e conserva", "O que é concreto"],
+            "Rainha de Espadas": ["Jamais muda de ideia", "Vingativa", "Revanchismo", "Revide", "Onde só se afunda", "Perde o que conquista"],
+            "Rainha de Copas": ["Enjoada", "Fértil", "Gravidez", "Criação", "Prestativa", "Disponível aos outros"],
+            "Rainha de Paus": ["Melhor rainha de todas", "Transforma um tigre em gato", "Consegue tudo na vontade dela", "Digna", "Honrada", "Altiva"],
+            "Rei de Ouros": ["Marcar território", "Conquistar o território", "Materialidade", "Provedor", "Alimenta", "Amor"],
+            "Rei de Espadas": ["Força mental", "Realiza", "Teimoso", "Irredutível", "Sisudo", "Sem carisma"],
+            "Rei de Copas": ["Foco desse rei = prazer", "Egoísta", "Habilidades", "Conquista o que quer", "Honesto", "Gentil"],
+            "Rei de Paus": ["Líder", "Espiritual", "Influente social", "Bom em tudo", "Bom amigo", "Bom chefe"],
+        };
+
+        // Retorna o Map (normalizado -> forma de exibição) com os significados
+        // usados no Modo Quiz: apenas os 6 primeiros significados da carta.
+        function getQuizWords(card) {
+            const out = new Map();
+            const words = QUIZ_FIRST6_WORDS[card.name] || [];
+            words.forEach(w => {
+                const key = normalizeWord(w);
+                if (key && !out.has(key)) out.set(key, w);
+            });
+            return out;
+        }
+
         function openQuiz() {
             deckModalPurpose = 'quiz';
             openDeckModal();
@@ -2007,7 +2175,7 @@ rawData.forEach(card => {
         // não repetir uma palavra que também pertença à carta certa
         // (evitando mais de uma resposta "correta" por coincidência).
         function quizBuildOptions(card) {
-            const ownWords = getCardMeaningWords(card);
+            const ownWords = getQuizWords(card);
             const ownKeys = [...ownWords.keys()];
             if (ownKeys.length === 0) return null;
 
@@ -2020,7 +2188,7 @@ rawData.forEach(card => {
 
             for (const oc of otherCards) {
                 if (distractors.length >= 4) break;
-                const words = getCardMeaningWords(oc);
+                const words = getQuizWords(oc);
                 const keys = shuffleArr([...words.keys()]);
                 for (const k of keys) {
                     if (!ownWords.has(k) && !usedKeys.has(k)) {
@@ -2135,6 +2303,17 @@ rawData.forEach(card => {
             updateEqualMeaningsButtonUI();
             renderPracticeBoard();
             autoContinue();
+        }
+
+        // Liga/desliga a exibição dos significados na placa embaixo de cada carta do tabuleiro
+        function togglePlateMeanings() {
+            showPlateMeanings = !showPlateMeanings;
+            const wrap = document.getElementById('togglePlateMeaningsBtn');
+            if (wrap) {
+                const sw = wrap.querySelector('.ios-switch');
+                if (sw) sw.classList.toggle('on', showPlateMeanings);
+            }
+            renderPracticeBoard();
         }
 
         function practiceRandomAll() {
@@ -2389,7 +2568,7 @@ rawData.forEach(card => {
             return `
                 <div onclick="onPracticeSlotClick('${house}','${tipo}')" class="house-slot">
                     <img src="${cardImg(card)}" onerror="this.src='https://placehold.co/200x300/1c143c/a87ff3?text=${encodeURIComponent(card.name)}'">
-                    <div class="house-plate">${plateWord(card)}</div>
+                    ${showPlateMeanings ? `<div class="house-plate">${plateWord(card)}</div>` : ''}
                 </div>`;
         }
 
@@ -2412,13 +2591,20 @@ rawData.forEach(card => {
             return `
                 <div onclick="onPracticeSlotClick('${house}','${tipo}')" class="scr-slot">
                     <img src="${cardImg(card)}" onerror="this.src='https://placehold.co/200x300/1c143c/a87ff3?text=${encodeURIComponent(card.name)}'">
-                    <div class="scr-plate">${plateWord(card)}</div>
+                    ${showPlateMeanings ? `<div class="scr-plate">${plateWord(card)}</div>` : ''}
                 </div>`;
         }
 
         function onPracticeSlotClick(house, tipo) {
-            pendingSlot = { house, tipo };
             const card = practiceState[house][tipo];
+
+            // Slot vazio: pula o menu intermediário e já abre a lista pra escolher a carta
+            if (!card) {
+                openChoosePanel(house, tipo);
+                return;
+            }
+
+            pendingSlot = { house, tipo };
             document.getElementById('slotActionLabel').innerText = `${houseLabel[house]} — Arcano ${tipo==='maior'?'Maior':'Menor'}`;
             
             // Ordem: 1. Escolher, 2. Sortear, 3. Visualizar (se existir carta)
