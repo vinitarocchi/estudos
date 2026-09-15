@@ -152,7 +152,7 @@
         .scr-col{ flex:1 1 70px; max-width:150px; display:flex; flex-direction:column; align-items:center; min-width:0; }
         .scr-house-title{ font-family:'Cinzel',serif; font-size:10px; letter-spacing:2px; text-transform:uppercase; color:#a87ff3; margin:0 0 10px; text-align:center; transition: all 0.3s ease; }
         .scr-slot{
-            width:100%; aspect-ratio:0.62; max-width:150px; border:1px solid rgba(168,127,243,.4);
+            width:100%; aspect-ratio:0.583; max-width:150px; border:1px solid rgba(168,127,243,.4);
             border-radius:10px; background:rgba(168,127,243,.06); position:relative; overflow:hidden;
             cursor:pointer; display:flex; align-items:center; justify-content:center; margin-bottom:10px;
             transition:all .3s ease;
@@ -194,8 +194,28 @@
         /* Trava de segurança: mesmo que o cálculo em JS de --hs-w erre, a carta NUNCA
            pode ultrapassar metade da largura disponível na dupla (menos o gap), então
            as duas cartas de uma casa jamais estouram a tela. */
+        .house-pair.single-slot .house-slot{ max-width:100%; }
+
+        /* ---------- Mandala Astrológica: 12 casas em círculo ---------- */
+        .board-mandala{
+            position:relative; width:100%; max-width:420px; aspect-ratio:1;
+            margin:14px auto 6px;
+        }
+        .board-mandala .mandala-house{
+            position:absolute; top:50%; left:50%;
+            transform: translate(-50%,-50%) rotate(var(--ang)) translateY(calc(-1 * clamp(80px, 33vmin, 165px))) rotate(calc(-1 * var(--ang)));
+        }
+        .board-mandala .house-block{ display:flex; flex-direction:column; align-items:center; gap:2px; }
+        .board-mandala .house-title{ font-size:0.55rem; white-space:nowrap; margin-bottom:2px; }
+        .board-mandala .house-pair{ flex-direction:column; align-items:center; gap:3px; }
+        .board-mandala .house-slot{
+            width:clamp(28px, 7.4vmin, 44px) !important;
+            height:auto !important;
+            max-width:none !important;
+            aspect-ratio:0.583 !important;
+        }
         .house-slot{
-            width:var(--hs-w); max-width:calc(50% - 4px); height:var(--hs-h); aspect-ratio:0.62; border:1px solid rgba(168,127,243,.4);
+            width:var(--hs-w); max-width:calc(50% - 4px); height:var(--hs-h); aspect-ratio:0.583; border:1px solid rgba(168,127,243,.4);
             border-radius:calc(var(--hs-w) * 0.14); background:rgba(168,127,243,.06); position:relative; overflow:hidden;
             cursor:pointer; display:flex; align-items:center; justify-content:center; flex:0 1 auto; box-sizing:border-box;
             transition:width .2s ease, height .2s ease;
@@ -267,17 +287,17 @@
 <body class="min-h-screen flex flex-col pb-6">
 
     <!-- Header -->
-    <header class="pt-12 pb-6 px-6 relative z-10">
-        <div class="relative flex justify-center items-center mb-6">
+    <header class="pt-4 pb-6 px-6 relative z-10">
+        <div class="relative flex justify-center items-center mb-4">
             <div class="text-center">
-                <div class="moon-phases">
+                <div class="moon-phases" style="margin-bottom:6px;">
                     <i class="fas fa-moon" style="transform: scaleX(-1);"></i>
                     <i class="fas fa-circle-half-stroke" style="transform: scaleX(-1);"></i>
                     <i class="fas fa-circle"></i>
                     <i class="fas fa-circle-half-stroke"></i>
                     <i class="fas fa-moon"></i>
                 </div>
-                <h1 class="font-cinzel tracking-[0.3em] text-3xl font-bold mt-2 text-white">TAROT</h1>
+                <h1 class="font-cinzel tracking-[0.3em] text-3xl font-bold mt-1 text-white">TAROT</h1>
                 <p class="text-[0.65rem] tracking-[0.2em] text-app-textMuted mt-1 uppercase">Estude • Compreenda • Integre</p>
             </div>
         </div>
@@ -345,6 +365,83 @@
         <button onclick="openQuiz()" class="fab-btn fab-btn-quiz">
             <i class="fas fa-circle-question"></i> Quiz
         </button>
+    </div>
+
+    <!-- Method selector modal (aparece antes de escolher o jogo, define se as casas usam 1 ou 2 cartas) -->
+    <div id="methodModal" class="fixed inset-0 z-[270] hidden items-center justify-center bg-app-bg/85 backdrop-blur-sm">
+        <div class="bg-app-surface border border-app-secondary/30 rounded-3xl p-6 w-[85%] max-w-xs shadow-2xl max-h-[80vh] flex flex-col">
+            <p class="text-white font-cinzel text-sm tracking-widest uppercase text-center mb-5 flex-shrink-0">Método de Leitura</p>
+            <div id="methodOptionsWrap" class="flex flex-col gap-3 overflow-y-auto pr-1"></div>
+            <button onclick="confirmMethodChoice()" class="pill-active w-full rounded-full py-3.5 text-xs font-semibold tracking-widest uppercase mt-6 shadow-lg shadow-app-primary/20 flex-shrink-0">
+                OK
+            </button>
+        </div>
+    </div>
+
+    <!-- Mandala date modal (pede uma data inicial antes de começar a Mandala Astrológica) -->
+    <div id="mandalaDateModal" class="fixed inset-0 z-[268] hidden items-center justify-center bg-app-bg/85 backdrop-blur-sm">
+        <div class="bg-app-surface border border-app-secondary/30 rounded-3xl p-6 w-[85%] max-w-xs shadow-2xl">
+            <p class="text-white font-cinzel text-sm tracking-widest uppercase text-center mb-1">Mandala Astrológica</p>
+            <p class="text-app-textMuted text-[0.65rem] text-center mb-5">Escolha a data de início da leitura</p>
+            <div class="flex gap-3">
+                <div class="flex-1">
+                    <label class="text-app-textMuted text-[0.6rem] uppercase tracking-wide block mb-1">Dia</label>
+                    <select id="mandalaDaySelect" class="meta-select w-full bg-app-card border border-app-secondary/30 text-white rounded-xl px-3 py-2 text-sm">
+                        <option value="1">1</option>
+                        <option value="2">2</option>
+                        <option value="3">3</option>
+                        <option value="4">4</option>
+                        <option value="5">5</option>
+                        <option value="6">6</option>
+                        <option value="7">7</option>
+                        <option value="8">8</option>
+                        <option value="9">9</option>
+                        <option value="10">10</option>
+                        <option value="11">11</option>
+                        <option value="12">12</option>
+                        <option value="13">13</option>
+                        <option value="14">14</option>
+                        <option value="15">15</option>
+                        <option value="16">16</option>
+                        <option value="17">17</option>
+                        <option value="18">18</option>
+                        <option value="19">19</option>
+                        <option value="20">20</option>
+                        <option value="21">21</option>
+                        <option value="22">22</option>
+                        <option value="23">23</option>
+                        <option value="24">24</option>
+                        <option value="25">25</option>
+                        <option value="26">26</option>
+                        <option value="27">27</option>
+                        <option value="28">28</option>
+                        <option value="29">29</option>
+                        <option value="30">30</option>
+                        <option value="31">31</option>
+                    </select>
+                </div>
+                <div class="flex-1">
+                    <label class="text-app-textMuted text-[0.6rem] uppercase tracking-wide block mb-1">Mês</label>
+                    <select id="mandalaMonthSelect" class="meta-select w-full bg-app-card border border-app-secondary/30 text-white rounded-xl px-3 py-2 text-sm">
+                        <option value="0">Janeiro</option>
+                        <option value="1">Fevereiro</option>
+                        <option value="2">Março</option>
+                        <option value="3">Abril</option>
+                        <option value="4">Maio</option>
+                        <option value="5">Junho</option>
+                        <option value="6">Julho</option>
+                        <option value="7">Agosto</option>
+                        <option value="8">Setembro</option>
+                        <option value="9">Outubro</option>
+                        <option value="10">Novembro</option>
+                        <option value="11">Dezembro</option>
+                    </select>
+                </div>
+            </div>
+            <button onclick="confirmMandalaDate()" class="pill-active w-full rounded-full py-3.5 text-xs font-semibold tracking-widest uppercase mt-6 shadow-lg shadow-app-primary/20">
+                Confirmar e Iniciar
+            </button>
+        </div>
     </div>
 
     <!-- Game selector modal (aparece antes de iniciar a prática) -->
@@ -492,6 +589,12 @@
                         <button onclick="openGameModal(true)" class="flex items-center gap-1.5 bg-app-surface border border-app-secondary/30 text-white rounded-full px-3 py-1.5 text-[0.6rem] font-semibold tracking-wide uppercase shadow-lg">
                             <i class="fas fa-layer-group"></i> Trocar Jogo
                         </button>
+                        <button onclick="openMethodModal(true)" class="flex items-center gap-1.5 bg-app-surface border border-app-secondary/30 text-white rounded-full px-3 py-1.5 text-[0.6rem] font-semibold tracking-wide uppercase shadow-lg">
+                            <i class="fas fa-book-open"></i> Trocar Método
+                        </button>
+                        <button id="btnProgressMandalaTime" onclick="progressMandalaTime()" class="hidden items-center gap-1.5 bg-app-surface border border-app-secondary/30 text-white rounded-full px-3 py-1.5 text-[0.6rem] font-semibold tracking-wide uppercase shadow-lg">
+                            <i class="fas fa-clock-rotate-left"></i> Progredir Tempo
+                        </button>
                         <button onclick="openMeaningMatches()" class="flex items-center gap-1.5 bg-app-surface border border-app-secondary/30 text-white rounded-full px-3 py-1.5 text-[0.6rem] font-semibold tracking-wide uppercase shadow-lg">
                             <i class="fas fa-link"></i> Significados Iguais
                         </button>
@@ -509,6 +612,7 @@
             </div>
 
             <!-- Tabuleiro -->
+            <p id="mandalaPeriodLabel" class="hidden text-center text-app-primary text-[0.65rem] tracking-widest uppercase font-cinzel mb-2"></p>
             <div id="practiceBoard" class="scr-board flex-1"></div>
         </div>
 
@@ -1564,11 +1668,145 @@ rawData.forEach(card => {
                     { id: 'casa4', label: 'Casa 4' },
                     { id: 'centro', label: 'Centro' }
                 ]
+            },
+            mandala: {
+                label: 'Mandala Astrológica',
+                houses: [
+                    { id: 'mcasa1', label: 'Casa 1' },
+                    { id: 'mcasa2', label: 'Casa 2' },
+                    { id: 'mcasa3', label: 'Casa 3' },
+                    { id: 'mcasa4', label: 'Casa 4' },
+                    { id: 'mcasa5', label: 'Casa 5' },
+                    { id: 'mcasa6', label: 'Casa 6' },
+                    { id: 'mcasa7', label: 'Casa 7' },
+                    { id: 'mcasa8', label: 'Casa 8' },
+                    { id: 'mcasa9', label: 'Casa 9' },
+                    { id: 'mcasa10', label: 'Casa 10' },
+                    { id: 'mcasa11', label: 'Casa 11' },
+                    { id: 'mcasa12', label: 'Casa 12' }
+                ]
             }
         };
         let currentGameKey = 'scr';
         let selectedGameTemp = 'scr';
         let gameModalFromPractice = false;
+
+        /* ============================================================
+           MÉTODO DE LEITURA
+           - europeu: cada casa recebe 1 Arcano Maior + 1 Arcano Menor
+             (duplas), como já funcionava no jogo original.
+           - americano_maior: cada casa recebe 1 carta só, sorteada
+             apenas entre os 22 Arcanos Maiores.
+           - americano_misto: cada casa recebe 1 carta só, sorteada de
+             um baralho único misturando os 78 Arcanos (Maiores e
+             Menores juntos).
+           ============================================================ */
+        const READING_METHODS = {
+            americano_maior: { label: 'Método Americano', sub: 'Só os 22 Arcanos Maiores' },
+            americano_misto: { label: 'Método Americano', sub: 'Arcanos Maiores e Menores' },
+            europeu:         { label: 'Método Europeu',   sub: 'Arcanos Maiores e Menores (em duplas)' }
+        };
+        let currentMethod = 'europeu';
+        let selectedMethodTemp = 'europeu';
+        let methodModalFromPractice = false;
+
+        // Quais "tipos" de slot cada casa tem, de acordo com o método atual.
+        // Europeu = 2 slots (maior + menor). Americano = 1 slot só ('unica').
+        function activeTipos() {
+            return currentMethod === 'europeu' ? ['maior', 'menor'] : ['unica'];
+        }
+
+        // Baralho de onde sortear/escolher cartas pra um dado tipo de slot.
+        function poolForTipo(tipo) {
+            if (tipo === 'unica') {
+                return currentMethod === 'americano_misto' ? rawData.slice() : rawData.filter(c => c.type === 'maior');
+            }
+            return rawData.filter(c => c.type === tipo); // 'maior' ou 'menor' (método Europeu)
+        }
+
+        // Rótulo curto pro slot vazio (cabe pouco espaço no card)
+        function tipoShort(tipo) {
+            if (tipo === 'maior') return 'Maior';
+            if (tipo === 'menor') return 'Menor';
+            return currentMethod === 'americano_maior' ? 'Maior' : 'Carta';
+        }
+
+        // Rótulo mais descritivo (títulos de painel/modal)
+        function tipoLongLabel(tipo) {
+            if (tipo === 'maior') return 'Arcano Maior';
+            if (tipo === 'menor') return 'Arcano Menor';
+            return currentMethod === 'americano_maior' ? 'Arcano Maior' : 'Carta';
+        }
+
+        // Plural, usado nos títulos do sorteio em lote
+        function tipoBatchLabel(tipo) {
+            if (tipo === 'maior') return 'Arcanos Maiores';
+            if (tipo === 'menor') return 'Arcanos Menores';
+            return currentMethod === 'americano_maior' ? 'Arcanos Maiores' : 'Cartas (Maiores e Menores)';
+        }
+
+        // Um "tipo" tem naipes pra filtrar quando envolve Arcanos Menores
+        function tipoHasSuits(tipo) {
+            if (tipo === 'menor') return true;
+            return tipo === 'unica' && currentMethod === 'americano_misto';
+        }
+
+        /* ---------- Modal de escolha do MÉTODO ---------- */
+        function renderMethodOptions() {
+            const wrap = document.getElementById('methodOptionsWrap');
+            wrap.innerHTML = Object.keys(READING_METHODS).map(key => `
+                <button id="methodOption-${key}" class="deck-option" onclick="selectMethodOption('${key}')">
+                    <div class="flex-1 min-w-0 text-left">
+                        <p class="font-cinzel text-white text-sm font-semibold">${READING_METHODS[key].label}</p>
+                        <p class="text-app-textMuted text-[0.65rem]">${READING_METHODS[key].sub}</p>
+                    </div>
+                    <i class="fas fa-circle-check text-app-primary deck-check"></i>
+                </button>
+            `).join('');
+            updateMethodOptionUI();
+        }
+
+        function updateMethodOptionUI() {
+            Object.keys(READING_METHODS).forEach(key => {
+                const el = document.getElementById('methodOption-' + key);
+                if (el) el.classList.toggle('deck-option-active', selectedMethodTemp === key);
+            });
+        }
+
+        function selectMethodOption(key) {
+            selectedMethodTemp = key;
+            updateMethodOptionUI();
+        }
+
+        function openMethodModal(fromPractice) {
+            methodModalFromPractice = !!fromPractice;
+            selectedMethodTemp = currentMethod;
+            renderMethodOptions();
+            document.getElementById('methodModal').classList.remove('hidden');
+            document.getElementById('methodModal').classList.add('flex');
+        }
+
+        function closeMethodModal() {
+            document.getElementById('methodModal').classList.add('hidden');
+            document.getElementById('methodModal').classList.remove('flex');
+        }
+
+        function applyMethod(key) {
+            currentMethod = key;
+        }
+
+        function confirmMethodChoice() {
+            applyMethod(selectedMethodTemp);
+            closeMethodModal();
+            if (methodModalFromPractice) {
+                // Trocando o método de dentro da prática: recomeça o tabuleiro
+                // já no formato certo (1 ou 2 cartas por casa).
+                openPracticeModal();
+            } else {
+                openGameModal(false);
+            }
+            methodModalFromPractice = false;
+        }
 
         function cardImg(card) {
             if (currentDeck === 'riderwaite' && card.imgUrlRW) return card.imgUrlRW;
@@ -1629,6 +1867,11 @@ rawData.forEach(card => {
         function confirmGameChoice() {
             applyGame(selectedGameTemp);
             closeGameModal();
+            if (currentGameKey === 'mandala') {
+                // A Mandala pede uma data inicial antes de ir pro baralho/prática
+                openMandalaDateModal();
+                return;
+            }
             if (gameModalFromPractice) {
                 openPracticeModal();
             } else {
@@ -1636,6 +1879,88 @@ rawData.forEach(card => {
                 openDeckModal();
             }
             gameModalFromPractice = false;
+        }
+
+        /* ============================================================
+           MANDALA ASTROLÓGICA
+           12 casas dispostas em círculo (Casa 1 = Ascendente, à esquerda;
+           Casa 10 = Meio do Céu, no topo — convenção padrão de mapa
+           astrológico). Pede uma data inicial antes de começar e tem um
+           botão "Progredir Tempo" que roda o conteúdo das casas 3 posições
+           pra frente (simulando o avanço de um trimestre).
+           ============================================================ */
+        const mandalaHouseAngles = {1:270,2:240,3:210,4:180,5:150,6:120,7:90,8:60,9:30,10:0,11:330,12:300};
+        let mandalaStartDay = null;
+        let mandalaStartMonth = null; // 0-11
+        let mandalaProgressCount = 0;
+
+        function openMandalaDateModal() {
+            document.getElementById('mandalaDateModal').classList.remove('hidden');
+            document.getElementById('mandalaDateModal').classList.add('flex');
+        }
+        function closeMandalaDateModal() {
+            document.getElementById('mandalaDateModal').classList.add('hidden');
+            document.getElementById('mandalaDateModal').classList.remove('flex');
+        }
+        function confirmMandalaDate() {
+            mandalaStartDay = parseInt(document.getElementById('mandalaDaySelect').value, 10);
+            mandalaStartMonth = parseInt(document.getElementById('mandalaMonthSelect').value, 10);
+            mandalaProgressCount = 0;
+            closeMandalaDateModal();
+            if (gameModalFromPractice) {
+                openPracticeModal();
+            } else {
+                deckModalPurpose = 'practice';
+                openDeckModal();
+            }
+            gameModalFromPractice = false;
+        }
+
+        function addMonthsClamped(day, month, monthsToAdd) {
+            const daysInMonth = [31,28,31,30,31,30,31,31,30,31,30,31];
+            const newMonth = ((month + monthsToAdd) % 12 + 12) % 12;
+            const newDay = Math.min(day, daysInMonth[newMonth]);
+            return { day: newDay, month: newMonth };
+        }
+
+        // Texto "Período: X a Y meses" + a data (dd/mm) correspondente ao início
+        // desse período, calculada a partir da data inicial informada.
+        function updateMandalaPeriodLabel() {
+            const label = document.getElementById('mandalaPeriodLabel');
+            if (!label) return;
+            const starts = [0,3,6,9], ends = [3,6,9,12];
+            const idx = mandalaProgressCount % 4;
+            let text = `Período: ${starts[idx]} a ${ends[idx]} meses`;
+            if (mandalaStartDay !== null && mandalaStartMonth !== null) {
+                const d = addMonthsClamped(mandalaStartDay, mandalaStartMonth, starts[idx]);
+                text += ` · ${String(d.day).padStart(2,'0')}/${String(d.month+1).padStart(2,'0')}`;
+            }
+            label.innerText = text;
+        }
+
+        // Casa (n-3), com wrap 1..12 — mesma lógica do jogo original
+        function wrapMandalaHouse(n) {
+            let w = n - 3;
+            while (w < 1) w += 12;
+            while (w > 12) w -= 12;
+            return w;
+        }
+
+        // "Progride" o tempo: desloca o conteúdo de cada casa 3 posições pra
+        // frente (a casa 1 herda o que estava na casa 4, e assim por diante).
+        function progressMandalaTime() {
+            if (currentGameKey !== 'mandala') return;
+            const newState = {};
+            houseOrder.forEach((h, idx) => {
+                const houseNum = idx + 1;
+                const targetNum = wrapMandalaHouse(houseNum);
+                const targetId = houseOrder[targetNum - 1];
+                newState[targetId] = practiceState[h];
+            });
+            practiceState = newState;
+            mandalaProgressCount++;
+            updateMandalaPeriodLabel();
+            renderPracticeBoard();
         }
 
         function openDeckModal() {
@@ -1910,7 +2235,11 @@ rawData.forEach(card => {
         let houseLabel = Object.fromEntries(GAMES.scr.houses.map(h => [h.id, h.label]));
         function freshPracticeState() {
             const s = {};
-            houseOrder.forEach(id => { s[id] = { maior: null, menor: null }; });
+            const tipos = activeTipos();
+            houseOrder.forEach(id => {
+                s[id] = {};
+                tipos.forEach(t => { s[id][t] = null; });
+            });
             return s;
         }
         let practiceState = freshPracticeState();
@@ -2023,7 +2352,7 @@ rawData.forEach(card => {
         function shuffleArr(arr) { let a=[...arr],c=a.length,r; while(c!==0){ r=Math.floor(Math.random()*c); c--; [a[c],a[r]]=[a[r],a[c]]; } return a; }
 
         function openPractice() {
-            openGameModal(false);
+            openMethodModal(false);
         }
 
         /* ============================================================
@@ -2287,7 +2616,18 @@ rawData.forEach(card => {
         function openPracticeModal() {
             document.getElementById('practiceModal').classList.remove('hidden');
             document.getElementById('practiceModal').classList.add('flex');
-            document.getElementById('practiceGameName').innerText = GAMES[currentGameKey].label;
+            document.getElementById('practiceGameName').innerText = `${GAMES[currentGameKey].label} · ${READING_METHODS[currentMethod].sub}`;
+
+            const isMandala = currentGameKey === 'mandala';
+            const progressBtn = document.getElementById('btnProgressMandalaTime');
+            const periodLabel = document.getElementById('mandalaPeriodLabel');
+            if (progressBtn) {
+                progressBtn.classList.toggle('hidden', !isMandala);
+                progressBtn.classList.toggle('flex', isMandala);
+            }
+            if (periodLabel) periodLabel.classList.toggle('hidden', !isMandala);
+            if (isMandala) updateMandalaPeriodLabel();
+
             practiceReset();
         }
         function closePractice() {
@@ -2319,20 +2659,22 @@ rawData.forEach(card => {
         function practiceRandomAll() {
             closeShuffle(); closeChoosePanel(); closeSlotAction();
             document.getElementById('practiceBoard').classList.remove('selecting');
-            const majors = shuffleArr(rawData.filter(c => c.type === 'maior'));
-            const minors = shuffleArr(rawData.filter(c => c.type === 'menor'));
-            houseOrder.forEach((h, i) => { practiceState[h].maior = majors[i]; practiceState[h].menor = minors[i]; });
+            activeTipos().forEach(tipo => {
+                const pool = shuffleArr(poolForTipo(tipo));
+                houseOrder.forEach((h, i) => { practiceState[h][tipo] = pool[i]; });
+            });
             renderPracticeBoard();
         }
 
         function firstUnfilled(tipo) { for (let i=0;i<houseOrder.length;i++) if (!practiceState[houseOrder[i]][tipo]) return i; return -1; }
 
-        // Nova lógica: embaralha por lote (Maiores todos de uma vez, depois Menores todos de uma vez)
+        // Embaralha por lote: um tipo de cada vez, na ordem definida pelo método atual
+        // (Europeu: Maiores, depois Menores. Americano: só 1 tipo, 'unica').
         function autoContinue() {
-            let idxM = firstUnfilled('maior');
-            if (idxM !== -1) { startShuffleBatch('maior'); return; }
-            let idxN = firstUnfilled('menor');
-            if (idxN !== -1) { startShuffleBatch('menor'); return; }
+            const tipos = activeTipos();
+            for (let i = 0; i < tipos.length; i++) {
+                if (firstUnfilled(tipos[i]) !== -1) { startShuffleBatch(tipos[i]); return; }
+            }
         }
 
         // Quantos "pares" (maior+menor) aparecem lado a lado na linha mais larga de cada jogo —
@@ -2379,20 +2721,21 @@ rawData.forEach(card => {
             // depende da PRÓPRIA largura final da carta, não de maxWidth. Por isso resolvemos
             // a equação já considerando esse gap proporcional: pairsInWidestRow*(2w + 0.08w) + gapsEntrePares = containerWidth
             const gapFactor = 0.08;
+            const slotsPerHouse = activeTipos().length; // 2 no método Europeu (duplas), 1 no Americano
             const totalGapsBetweenGroups = (pairsInWidestRow - 1) * gapBetweenGroups;
-            const widthFromWidth = Math.floor((containerWidth - totalGapsBetweenGroups - 2) / (pairsInWidestRow * (2 + gapFactor)));
+            const widthFromWidth = Math.floor((containerWidth - totalGapsBetweenGroups - 2) / (pairsInWidestRow * (slotsPerHouse + gapFactor)));
 
             const availableHeight = getPracticeAvailableHeight();
             const rowGap = 10; // aprox. gap vertical entre linhas de casas
             const rowOverhead = 20; // aprox. altura do título da casa + margem
             const heightPerRow = Math.max(24, (availableHeight - (verticalRows - 1) * rowGap) / verticalRows - rowOverhead);
-            const widthFromHeight = Math.floor(heightPerRow * 0.62);
+            const widthFromHeight = Math.floor(heightPerRow * 0.583);
 
             return Math.max(20, Math.min(widthFromWidth, widthFromHeight, maxWidth));
         }
 
         function applySlotWidth() {
-            if (currentGameKey === 'scr') return;
+            if (currentGameKey === 'scr' || currentGameKey === 'mandala') return;
             const board = document.getElementById('practiceBoard');
             const w = computeSlotWidth(currentWidestPairs, currentVerticalRows, currentSlotMaxWidth);
             board.style.setProperty('--hs-w', w + 'px');
@@ -2402,7 +2745,7 @@ rawData.forEach(card => {
             // align-items:flex-start), então calculamos a altura aqui e a
             // aplicamos direto — isso elimina qualquer ambiguidade e garante que
             // o card nunca fique achatado, independente do motor de renderização.
-            board.style.setProperty('--hs-h', Math.round(w / 0.62) + 'px');
+            board.style.setProperty('--hs-h', Math.round(w / 0.583) + 'px');
         }
 
         window.addEventListener('resize', () => {
@@ -2494,6 +2837,7 @@ rawData.forEach(card => {
         function renderPracticeBoard() {
             const board = document.getElementById('practiceBoard');
             if (currentGameKey === 'scr') { renderScrBoard(board); return; }
+            if (currentGameKey === 'mandala') { renderMandalaBoard(board); return; }
 
             currentWidestPairs = GAME_WIDEST_ROW_PAIRS[currentGameKey] || 1;
             currentVerticalRows = GAME_VERTICAL_ROWS[currentGameKey] || 1;
@@ -2534,36 +2878,42 @@ rawData.forEach(card => {
 
         /* ---------- Layout do jogo SCR (Situação, Caminho e Resultado) ---------- */
         function renderScrBoard(board) {
-            board.innerHTML = `<div class="scr-row" id="scrRowMaior"></div><div class="scr-row" id="scrRowMenor"></div>`;
-            const rowMaior = document.getElementById('scrRowMaior');
-            const rowMenor = document.getElementById('scrRowMenor');
-            houseOrder.forEach(h => {
-                const cardM = practiceState[h].maior;
-                const cardN = practiceState[h].menor;
-                const colM = document.createElement('div');
-                colM.className = 'scr-col';
-                colM.innerHTML = `
-                    <div class="scr-house-title">${houseLabel[h]}</div>
-                    ${practiceSlotHTML(h,'maior')}
-                    <div class="scr-caption">${cardM ? cardM.name : 'Arcano Maior'}</div>
-                `;
-                rowMaior.appendChild(colM);
-
-                const colN = document.createElement('div');
-                colN.className = 'scr-col';
-                colN.innerHTML = `
-                    ${practiceSlotHTML(h,'menor')}
-                    <div class="scr-caption">${cardN ? cardN.name : 'Arcano Menor'}</div>
-                `;
-                rowMenor.appendChild(colN);
+            const tipos = activeTipos(); // 2 linhas (Maior/Menor) no Europeu, 1 linha só no Americano
+            board.innerHTML = tipos.map(t => `<div class="scr-row" id="scrRow_${t}"></div>`).join('');
+            tipos.forEach((tipo, idx) => {
+                const row = document.getElementById('scrRow_' + tipo);
+                houseOrder.forEach(h => {
+                    const card = practiceState[h][tipo];
+                    const col = document.createElement('div');
+                    col.className = 'scr-col';
+                    col.innerHTML = `
+                        ${idx === 0 ? `<div class="scr-house-title">${houseLabel[h]}</div>` : ''}
+                        ${practiceSlotHTML(h, tipo)}
+                        <div class="scr-caption">${card ? card.name : tipoLongLabel(tipo)}</div>
+                    `;
+                    row.appendChild(col);
+                });
             });
+        }
+
+        // Dispõe as 12 casas em círculo, na convenção astrológica padrão
+        // (Casa 1 à esquerda / Ascendente, Casa 10 no topo / Meio do Céu).
+        function renderMandalaBoard(board) {
+            board.innerHTML = `
+                <div class="board-mandala">
+                    ${houseOrder.map((h, i) => `
+                        <div class="mandala-house" style="--ang:${mandalaHouseAngles[i + 1]}deg;">
+                            ${houseBlockHTML(h)}
+                        </div>
+                    `).join('')}
+                </div>`;
         }
 
         /* ---------- Blocos compactos de casa (Maior + Menor lado a lado), usados por todos os jogos exceto o SCR ---------- */
         function practiceSlotHTMLCompact(house, tipo) {
             const card = practiceState[house][tipo];
             if (!card) {
-                return `<div onclick="onPracticeSlotClick('${house}','${tipo}')" class="house-slot empty">${tipo==='maior'?'Maior':'Menor'}</div>`;
+                return `<div onclick="onPracticeSlotClick('${house}','${tipo}')" class="house-slot empty">${tipoShort(tipo)}</div>`;
             }
             return `
                 <div onclick="onPracticeSlotClick('${house}','${tipo}')" class="house-slot">
@@ -2573,12 +2923,12 @@ rawData.forEach(card => {
         }
 
         function houseBlockHTML(houseId) {
+            const tipos = activeTipos();
             return `
                 <div class="house-block">
                     <div class="house-title">${houseLabel[houseId]}</div>
-                    <div class="house-pair">
-                        ${practiceSlotHTMLCompact(houseId,'maior')}
-                        ${practiceSlotHTMLCompact(houseId,'menor')}
+                    <div class="house-pair${tipos.length === 1 ? ' single-slot' : ''}">
+                        ${tipos.map(t => practiceSlotHTMLCompact(houseId, t)).join('')}
                     </div>
                 </div>`;
         }
@@ -2586,7 +2936,7 @@ rawData.forEach(card => {
         function practiceSlotHTML(house, tipo) {
             const card = practiceState[house][tipo];
             if (!card) {
-                return `<div onclick="onPracticeSlotClick('${house}','${tipo}')" class="scr-slot empty">${tipo==='maior'?'Maior':'Menor'}</div>`;
+                return `<div onclick="onPracticeSlotClick('${house}','${tipo}')" class="scr-slot empty">${tipoShort(tipo)}</div>`;
             }
             return `
                 <div onclick="onPracticeSlotClick('${house}','${tipo}')" class="scr-slot">
@@ -2605,7 +2955,7 @@ rawData.forEach(card => {
             }
 
             pendingSlot = { house, tipo };
-            document.getElementById('slotActionLabel').innerText = `${houseLabel[house]} — Arcano ${tipo==='maior'?'Maior':'Menor'}`;
+            document.getElementById('slotActionLabel').innerText = `${houseLabel[house]} — ${tipoLongLabel(tipo)}`;
             
             // Ordem: 1. Escolher, 2. Sortear, 3. Visualizar (se existir carta)
             let btnHtml = `
@@ -2645,11 +2995,17 @@ rawData.forEach(card => {
         }
 
         /* ---------- Sorteio Batch (Embaralha uma vez para Maiores, e uma vez para Menores) ---------- */
+        // "Denso": pool grande (Arcanos Menores, ou baralho misto de 78 cartas no Americano),
+        // usa cartas de verso menores no grid de sorteio pra caber tudo em tela.
+        function tipoIsDense(tipo) {
+            return tipo === 'menor' || (tipo === 'unica' && currentMethod === 'americano_misto');
+        }
+
         function startShuffleBatch(tipo) {
             closeChoosePanel();
             const panel = document.getElementById('shufflePanel');
             const grid = document.getElementById('shuffleGrid');
-            document.getElementById('shuffleTitle').innerText = `Sorteio — Arcanos ${tipo==='maior'?'Maiores':'Menores'}`;
+            document.getElementById('shuffleTitle').innerText = `Sorteio — ${tipoBatchLabel(tipo)}`;
             panel.classList.remove('hidden');
             panel.classList.add('flex');
             syncSelectingState(); // deriva "selecting" do painel que acabou de abrir
@@ -2669,13 +3025,14 @@ rawData.forEach(card => {
         function renderShuffleSpreadBatch(tipo) {
             const grid = document.getElementById('shuffleGrid');
             grid.innerHTML = '';
-            grid.className = tipo === 'menor' ? "w-full flex-1 min-h-0 overflow-y-auto flex flex-wrap gap-1 justify-center px-1" : "w-full flex-1 min-h-0 overflow-y-auto flex flex-wrap gap-2 justify-center px-1";
+            const dense = tipoIsDense(tipo);
+            grid.className = dense ? "w-full flex-1 min-h-0 overflow-y-auto flex flex-wrap gap-1 justify-center px-1" : "w-full flex-1 min-h-0 overflow-y-auto flex flex-wrap gap-2 justify-center px-1";
             
-            const pool = shuffleArr(rawData.filter(c => c.type === tipo));
+            const pool = shuffleArr(poolForTipo(tipo));
             pool.forEach(card => {
                 const back = document.createElement('div');
                 back.className = 'back-card';
-                if (tipo === 'menor') {
+                if (dense) {
                     back.style.width = '24px';
                     back.style.height = '42px';
                     back.innerHTML = '<i class="fas fa-star-of-life text-[8px]"></i>';
@@ -2697,10 +3054,9 @@ rawData.forEach(card => {
                         if (firstUnfilled(tipo) === -1) {
                             closeShuffle();
                             renderPracticeBoard();
-                            if (tipo === 'maior') {
-                                // Troca automaticamente para os arcanos menores se for o caso
-                                setTimeout(() => { autoContinue(); }, 400);
-                            }
+                            // Segue pro próximo tipo do método (ex: Menores depois de Maiores),
+                            // ou não faz nada se já preencheu tudo.
+                            setTimeout(() => { autoContinue(); }, 400);
                         } else {
                             this.style.visibility = 'hidden';
                             renderPracticeBoard();
@@ -2716,7 +3072,7 @@ rawData.forEach(card => {
             closeChoosePanel();
             const panel = document.getElementById('shufflePanel');
             const grid = document.getElementById('shuffleGrid');
-            document.getElementById('shuffleTitle').innerText = `Sorteio — ${houseLabel[house]} (${tipo==='maior'?'Maior':'Menor'})`;
+            document.getElementById('shuffleTitle').innerText = `Sorteio — ${houseLabel[house]} (${tipoLongLabel(tipo)})`;
             panel.classList.remove('hidden');
             panel.classList.add('flex');
             syncSelectingState();
@@ -2732,12 +3088,13 @@ rawData.forEach(card => {
             }
             setTimeout(() => {
                 grid.innerHTML = '';
-                grid.className = tipo === 'menor' ? "w-full flex-1 min-h-0 overflow-y-auto flex flex-wrap gap-1 justify-center px-1" : "w-full flex-1 min-h-0 overflow-y-auto flex flex-wrap gap-2 justify-center px-1";
-                const pool = shuffleArr(rawData.filter(c => c.type === tipo));
+                const dense = tipoIsDense(tipo);
+                grid.className = dense ? "w-full flex-1 min-h-0 overflow-y-auto flex flex-wrap gap-1 justify-center px-1" : "w-full flex-1 min-h-0 overflow-y-auto flex flex-wrap gap-2 justify-center px-1";
+                const pool = shuffleArr(poolForTipo(tipo));
                 pool.forEach(card => {
                     const back = document.createElement('div');
                     back.className = 'back-card';
-                    if (tipo === 'menor') {
+                    if (dense) {
                         back.style.width = '24px';
                         back.style.height = '42px';
                         back.innerHTML = '<i class="fas fa-star-of-life text-[8px]"></i>';
@@ -2778,32 +3135,33 @@ rawData.forEach(card => {
         }
 
         function renderChoosePanel(house, tipo) {
-            document.getElementById('choosePanelTitle').innerText = `Escolher — ${houseLabel[house]} · Arcano ${tipo==='maior'?'Maior':'Menor'}`;
+            document.getElementById('choosePanelTitle').innerText = `Escolher — ${houseLabel[house]} · ${tipoLongLabel(tipo)}`;
             const suitsEl = document.getElementById('choosePanelSuits');
             const gridEl = document.getElementById('choosePanelGrid');
-            
-            // Para as 56 cartas caberem perfeitamente
-            if (tipo === 'menor') {
+            const showSuits = tipoHasSuits(tipo);
+            const dense = tipoIsDense(tipo);
+
+            // Para muitas cartas caberem perfeitamente (Menores, ou baralho misto de 78 no Americano)
+            if (showSuits) {
                 suitsEl.classList.remove('hidden'); suitsEl.classList.add('flex');
                 const suits = [['todos','Todos'],['ouros','Ouros'],['espadas','Espadas'],['copas','Copas'],['paus','Paus']];
                 suitsEl.innerHTML = suits.map(([k,l]) => `<button onclick="setChooseSuit('${house}','${tipo}','${k}')" class="whitespace-nowrap px-3 py-1 rounded-full text-[0.65rem] ${choosePanelSuit===k?'pill-active':'bg-app-card border border-app-secondary/30 text-app-textMuted'}">${l}</button>`).join('');
-                
-                    gridEl.className = 'grid grid-cols-8 sm:grid-cols-10 gap-1 pr-1 pb-4 flex-1 min-h-0 overflow-y-auto';
-} else { 
-    suitsEl.classList.add('hidden'); suitsEl.classList.remove('flex'); 
-    gridEl.className = 'grid grid-cols-4 sm:grid-cols-6 gap-2 pr-1 pb-4 flex-1 min-h-0 overflow-y-auto';
-}
+                gridEl.className = 'grid grid-cols-8 sm:grid-cols-10 gap-1 pr-1 pb-4 flex-1 min-h-0 overflow-y-auto';
+            } else {
+                suitsEl.classList.add('hidden'); suitsEl.classList.remove('flex');
+                gridEl.className = 'grid grid-cols-4 sm:grid-cols-6 gap-2 pr-1 pb-4 flex-1 min-h-0 overflow-y-auto';
+            }
 
+            let pool = poolForTipo(tipo);
+            if (showSuits && choosePanelSuit !== 'todos') pool = pool.filter(c => c.suit === choosePanelSuit);
 
-            let pool = rawData.filter(c => c.type === tipo);
-            if (tipo === 'menor' && choosePanelSuit !== 'todos') pool = pool.filter(c => c.suit === choosePanelSuit);
-
+            const showLabel = !dense; // com muitas cartas na grade, esconde o nome pra não poluir
             gridEl.innerHTML = pool.map(card => `
                 <div onclick="chooseCard('${house}','${tipo}','${encodeURIComponent(card.name)}')" class="cursor-pointer flex flex-col items-center card-hover">
-                    <div class="w-full aspect-[0.62] rounded-md overflow-hidden border border-app-secondary/40 shadow-sm">
+                    <div class="w-full aspect-[0.583] rounded-md overflow-hidden border border-app-secondary/40 shadow-sm">
                         <img src="${cardImg(card)}" class="w-full h-full object-cover" onerror="this.src='https://placehold.co/200x300/1c143c/a87ff3?text=${encodeURIComponent(card.name)}'">
                     </div>
-                    ${tipo === 'maior' ? `<span class="text-[0.45rem] text-app-textMuted text-center mt-1 leading-tight">${card.name}</span>` : ''}
+                    ${showLabel ? `<span class="text-[0.45rem] text-app-textMuted text-center mt-1 leading-tight">${card.name}</span>` : ''}
                 </div>
             `).join('');
         }
@@ -2899,8 +3257,9 @@ function getBoardCards() {
     houseOrder.forEach(h => {
         const slot = practiceState[h];
         if (!slot) return;
-        if (slot.maior) cards.push({ house: h, tipo: 'maior', card: slot.maior });
-        if (slot.menor) cards.push({ house: h, tipo: 'menor', card: slot.menor });
+        Object.keys(slot).forEach(tipo => {
+            if (slot[tipo]) cards.push({ house: h, tipo, card: slot[tipo] });
+        });
     });
     return cards;
 }
