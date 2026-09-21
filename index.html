@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Tarot - Estude, Compreenda, Integre</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
     <script>
@@ -17,13 +18,13 @@
                     },
                     colors: {
                         app: {
-                            bg: '#110b29',
-                            surface: '#1c143c',
-                            card: '#251b4d',
-                            primary: '#a87ff3',
-                            secondary: '#6c539e',
-                            textMain: '#ffffff',
-                            textMuted: '#a398c2'
+                            bg: 'var(--c-bg)',
+                            surface: 'var(--c-surface)',
+                            card: 'var(--c-card)',
+                            primary: 'var(--c-primary)',
+                            secondary: 'var(--c-secondary)',
+                            textMain: 'var(--c-textMain)',
+                            textMuted: 'var(--c-textMuted)'
                         }
                     }
                 }
@@ -31,18 +32,91 @@
         }
     </script>
     <style>
+        :root{
+            /* Tema padrão — Místico (roxo) */
+            --c-bg:#110b29; --c-bg-rgb:17,11,41;
+            --c-surface:#1c143c; --c-surface-rgb:28,20,60;
+            --c-card:#251b4d; --c-card-rgb:37,27,77;
+            --c-primary:#a87ff3; --c-primary-rgb:168,127,243;
+            --c-primary-light:#d0a4ff;
+            --c-secondary:#6c539e; --c-secondary-rgb:108,83,158;
+            --c-textMain:#ffffff;
+            --c-textMuted:#a398c2;
+            --c-blob1: rgba(67,40,116,0.4);
+            --c-blob2: rgba(45,23,89,0.4);
+            --c-cardback-a:#2b2058; --c-cardback-b:#171033;
+            --c-scrollbar-thumb:#3b2d75;
+            --c-fab-practice-a: rgba(168,127,243,.95);
+            --c-fab-practice-b: rgba(208,164,255,.95);
+            --c-fab-quiz-a: rgba(96,180,220,.95);
+            --c-fab-quiz-b: rgba(147,215,253,.95);
+        }
+        html.theme-costar{
+            /* Tema Preto — fundo preto, texto/bordas em branco */
+            --c-bg:#000000; --c-bg-rgb:0,0,0;
+            --c-surface:#0d0d0d; --c-surface-rgb:13,13,13;
+            --c-card:#161616; --c-card-rgb:22,22,22;
+            --c-primary:#ffffff; --c-primary-rgb:255,255,255;
+            --c-primary-light:#ffffff;
+            --c-secondary:#4d4d4d; --c-secondary-rgb:77,77,77;
+            --c-textMain:#ffffff;
+            --c-textMuted:#9a9a9a;
+            --c-blob1: rgba(255,255,255,0);
+            --c-blob2: rgba(255,255,255,0);
+            --c-cardback-a:#222222; --c-cardback-b:#0a0a0a;
+            --c-scrollbar-thumb:#3d3d3d;
+            --c-fab-practice-a:#ffffff;
+            --c-fab-practice-b:#ffffff;
+            --c-fab-quiz-a:#c9c9c9;
+            --c-fab-quiz-b:#c9c9c9;
+        }
+        html.theme-branco{
+            /* Tema Branco — fundo branco, texto/bordas em preto */
+            --c-bg:#ffffff; --c-bg-rgb:255,255,255;
+            --c-surface:#f4f4f4; --c-surface-rgb:244,244,244;
+            --c-card:#ececec; --c-card-rgb:236,236,236;
+            --c-primary:#000000; --c-primary-rgb:0,0,0;
+            --c-primary-light:#000000;
+            --c-secondary:#a3a3a3; --c-secondary-rgb:163,163,163;
+            --c-textMain:#000000;
+            --c-textMuted:#5c5c5c;
+            --c-blob1: rgba(0,0,0,0);
+            --c-blob2: rgba(0,0,0,0);
+            --c-cardback-a:#e2e2e2; --c-cardback-b:#cfcfcf;
+            --c-scrollbar-thumb:#cfcfcf;
+            --c-fab-practice-a:#000000;
+            --c-fab-practice-b:#000000;
+            --c-fab-quiz-a:#3a3a3a;
+            --c-fab-quiz-b:#3a3a3a;
+        }
+        html.theme-costar .moon-phases{ color:#d9d9d9; }
+        html.theme-costar .moon-phases i:nth-child(3){ text-shadow:0 0 15px rgba(255,255,255,.35); }
+        html.theme-branco .moon-phases{ color:#333333; }
+        html.theme-branco .moon-phases i:nth-child(3){ text-shadow:0 0 15px rgba(0,0,0,.2); }
+        html.theme-costar body, html.theme-branco body{ font-family:'Inter', sans-serif; }
+
+        /* Classes utilitárias do Tailwind que assumiam fundo escuro (texto/overlays
+           brancos fixos) — no tema Branco precisam virar preto/escuro. */
+        html.theme-branco .text-white,
+        html.theme-branco .hover\:text-white:hover{ color: var(--c-textMain) !important; }
+        html.theme-branco .bg-white\/5{ background-color: rgba(0,0,0,.05) !important; }
+        html.theme-branco .bg-white\/10{ background-color: rgba(0,0,0,.08) !important; }
+        html.theme-branco .border-white\/5{ border-color: rgba(0,0,0,.08) !important; }
+        html.theme-branco .bg-\[\#171033\]{ background-color: var(--c-card) !important; }
+
         body {
-            background-color: #110b29;
+            background-color: var(--c-bg);
             background-image:
-                radial-gradient(circle at 15% 50%, rgba(67, 40, 116, 0.4) 0%, transparent 50%),
-                radial-gradient(circle at 85% 30%, rgba(45, 23, 89, 0.4) 0%, transparent 50%);
-            color: white;
+                radial-gradient(circle at 15% 50%, var(--c-blob1) 0%, transparent 50%),
+                radial-gradient(circle at 85% 30%, var(--c-blob2) 0%, transparent 50%);
+            color: var(--c-textMain);
             font-family: 'Inter', sans-serif;
             margin: 0;
             padding: 0;
             overflow-x: hidden;
             -webkit-tap-highlight-color: transparent;
             touch-action: manipulation;
+            transition: background-color .3s ease, color .3s ease;
         }
         /* Evita o gesto nativo de "dar zoom com dois toques rápidos" do
            navegador mobile, que atrapalhava cliques rápidos em botões
@@ -51,54 +125,54 @@
             touch-action: manipulation;
         }
         ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: #110b29; }
-        ::-webkit-scrollbar-thumb { background: #3b2d75; border-radius: 10px; }
-        ::-webkit-scrollbar-thumb:hover { background: #a87ff3; }
+        ::-webkit-scrollbar-track { background: var(--c-bg); }
+        ::-webkit-scrollbar-thumb { background: var(--c-scrollbar-thumb); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--c-primary); }
         .scrollbar-hide::-webkit-scrollbar { display: none; }
         .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
         .glass-effect {
-            background: rgba(28, 20, 60, 0.7);
+            background: rgba(var(--c-surface-rgb), 0.7);
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
             border-top: 1px solid rgba(255, 255, 255, 0.05);
         }
         .card-image-placeholder { position: relative; overflow: hidden; border-radius: 1rem; }
         .card-image { width: 100%; height: 100%; object-fit: cover; border-radius: 1rem; }
-        .pill-active { background: linear-gradient(90deg, #a87ff3, #d0a4ff); color: #110b29; font-weight: 600; }
+        .pill-active { background: linear-gradient(90deg, var(--c-primary), var(--c-primary-light)); color: var(--c-bg); font-weight: 600; }
 
         /* ---- switch estilo iOS (toggle liga/desliga) ---- */
         .ios-switch-wrap { display:flex; align-items:center; gap:6px; }
-        .ios-switch { position:relative; width:38px; height:22px; border-radius:9999px; background:rgba(108,83,158,.5); border:1px solid rgba(168,127,243,.35); cursor:pointer; transition:background .25s ease; flex-shrink:0; }
-        .ios-switch.on { background: linear-gradient(90deg, #a87ff3, #d0a4ff); border-color: transparent; }
+        .ios-switch { position:relative; width:38px; height:22px; border-radius:9999px; background:rgba(var(--c-secondary-rgb),.5); border:1px solid rgba(var(--c-primary-rgb),.35); cursor:pointer; transition:background .25s ease; flex-shrink:0; }
+        .ios-switch.on { background: linear-gradient(90deg, var(--c-primary), var(--c-primary-light)); border-color: transparent; }
         .ios-switch .ios-switch-knob { position:absolute; top:2px; left:2px; width:16px; height:16px; border-radius:50%; background:#fff; box-shadow:0 1px 3px rgba(0,0,0,.4); transition:transform .25s cubic-bezier(0.34,1.56,0.64,1); }
         .ios-switch.on .ios-switch-knob { transform: translateX(16px); }
-        .ios-switch-label { font-size:.6rem; font-weight:600; letter-spacing:.05em; text-transform:uppercase; color:#fff; white-space:nowrap; }
+        .ios-switch-label { font-size:.6rem; font-weight:600; letter-spacing:.05em; text-transform:uppercase; color:var(--c-textMain); white-space:nowrap; }
         .moon-phases { display: flex; justify-content: center; align-items: center; gap: 12px; color: #f7e0a3; font-size: 1.2rem; margin-bottom: 10px; }
         .moon-phases i:nth-child(3) { font-size: 1.8rem; text-shadow: 0 0 15px rgba(247, 224, 163, 0.6); }
         .card-hover:active { transform: scale(0.95); }
         @media (hover: hover) {
-            .card-hover:hover { transform: translateY(-5px); box-shadow: 0 10px 25px rgba(168, 127, 243, 0.2); }
+            .card-hover:hover { transform: translateY(-5px); box-shadow: 0 10px 25px rgba(var(--c-primary-rgb), 0.2); }
         }
 
         /* ---- lista de arcanos (estilo catálogo) ---- */
-        .arcana-row { display:flex; align-items:center; gap:16px; padding:14px 4px; border-bottom:1px solid rgba(168,127,243,.12); transition:transform .2s ease, background .2s ease; cursor:pointer; }
+        .arcana-row { display:flex; align-items:center; gap:16px; padding:14px 4px; border-bottom:1px solid rgba(var(--c-primary-rgb),.12); transition:transform .2s ease, background .2s ease; cursor:pointer; }
         .arcana-row:last-child { border-bottom:none; }
-        .arcana-row:active { transform: scale(0.98); background: rgba(168,127,243,.06); border-radius: 16px; }
-        .arcana-thumb { width:64px; height:64px; border-radius:9999px; overflow:hidden; flex-shrink:0; border:2px solid rgba(168,127,243,.45); box-shadow:0 6px 16px rgba(0,0,0,.45), 0 0 0 4px rgba(168,127,243,.06); background:#251b4d; }
+        .arcana-row:active { transform: scale(0.98); background: rgba(var(--c-primary-rgb),.06); border-radius: 16px; }
+        .arcana-thumb { width:64px; height:64px; border-radius:9999px; overflow:hidden; flex-shrink:0; border:2px solid rgba(var(--c-primary-rgb),.45); box-shadow:0 6px 16px rgba(0,0,0,.45), 0 0 0 4px rgba(var(--c-primary-rgb),.06); background:var(--c-card); }
         .arcana-thumb img { width:100%; height:100%; object-fit:cover; object-position:center 18%; }
-        .arcana-pill { flex:1; background:rgba(37,27,77,.65); border:1px solid rgba(168,127,243,.18); border-radius:1.1rem; padding:14px 18px; min-width:0; }
-        .arcana-pill h3 { font-family:'Cinzel',serif; font-weight:700; font-size:1.05rem; letter-spacing:.03em; color:#fff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-        .arcana-pill .arcana-tag { font-size:.62rem; letter-spacing:.15em; text-transform:uppercase; color:#a87ff3; margin-top:2px; display:block; }
+        .arcana-pill { flex:1; background:rgba(var(--c-card-rgb),.65); border:1px solid rgba(var(--c-primary-rgb),.18); border-radius:1.1rem; padding:14px 18px; min-width:0; }
+        .arcana-pill h3 { font-family:'Cinzel',serif; font-weight:700; font-size:1.05rem; letter-spacing:.03em; color:var(--c-textMain); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+        .arcana-pill .arcana-tag { font-size:.62rem; letter-spacing:.15em; text-transform:uppercase; color:var(--c-primary); margin-top:2px; display:block; }
 
         /* ---- botão flutuante de praticar leitura ---- */
         .practice-fab {
             position: fixed; left: 16px; right: 16px; bottom: 18px; z-index: 40;
             display:flex; align-items:center; justify-content:center; gap:10px;
             padding: 15px 20px; border-radius: 9999px;
-            background: linear-gradient(90deg, rgba(168,127,243,.95), rgba(208,164,255,.95));
-            color: #110b29; font-family:'Cinzel',serif; font-weight:700; font-size:.72rem;
+            background: linear-gradient(90deg, rgba(var(--c-primary-rgb),.95), rgba(208,164,255,.95));
+            color: var(--c-bg); font-family:'Cinzel',serif; font-weight:700; font-size:.72rem;
             letter-spacing:.15em; text-transform:uppercase;
-            box-shadow: 0 10px 30px rgba(168,127,243,.35), 0 4px 12px rgba(0,0,0,.4);
+            box-shadow: 0 10px 30px rgba(var(--c-primary-rgb),.35), 0 4px 12px rgba(0,0,0,.4);
             border: 1px solid rgba(255,255,255,.25);
         }
         .practice-fab:active { transform: scale(0.97); }
@@ -108,17 +182,17 @@
         .fab-btn {
             flex: 1; display:flex; align-items:center; justify-content:center; gap:8px;
             padding: 15px 12px; border-radius: 9999px;
-            color: #110b29; font-family:'Cinzel',serif; font-weight:700; font-size:.68rem;
+            color: var(--c-bg); font-family:'Cinzel',serif; font-weight:700; font-size:.68rem;
             letter-spacing:.1em; text-transform:uppercase;
-            box-shadow: 0 10px 30px rgba(168,127,243,.35), 0 4px 12px rgba(0,0,0,.4);
+            box-shadow: 0 10px 30px rgba(var(--c-primary-rgb),.35), 0 4px 12px rgba(0,0,0,.4);
             border: 1px solid rgba(255,255,255,.25);
         }
         .fab-btn:active { transform: scale(0.97); }
-        .fab-btn-practice { background: linear-gradient(90deg, rgba(168,127,243,.95), rgba(208,164,255,.95)); }
-        .fab-btn-quiz { background: linear-gradient(90deg, rgba(96,180,220,.95), rgba(147,215,253,.95)); }
+        .fab-btn-practice { background: linear-gradient(90deg, var(--c-fab-practice-a), var(--c-fab-practice-b)); }
+        .fab-btn-quiz { background: linear-gradient(90deg, var(--c-fab-quiz-a), var(--c-fab-quiz-b)); }
 
         /* ---- opções de resposta do quiz ---- */
-        .quiz-option { width:100%; text-align:left; padding:12px 16px; border-radius:1.1rem; border:1px solid rgba(168,127,243,.25); background:rgba(37,27,77,.6); color:#fff; font-size:.82rem; display:flex; align-items:center; justify-content:space-between; gap:10px; transition:all .2s ease; }
+        .quiz-option { width:100%; text-align:left; padding:12px 16px; border-radius:1.1rem; border:1px solid rgba(var(--c-primary-rgb),.25); background:rgba(var(--c-card-rgb),.6); color:var(--c-textMain); font-size:.82rem; display:flex; align-items:center; justify-content:space-between; gap:10px; transition:all .2s ease; }
         .quiz-option:active { transform: scale(0.98); }
         .quiz-option .quiz-feedback { font-size:.6rem; font-weight:700; letter-spacing:.15em; text-transform:uppercase; opacity:0; }
         .quiz-option.quiz-correct { border-color:#22c55e; background:rgba(34,197,94,.15); }
@@ -129,45 +203,45 @@
         .quiz-option.quiz-reveal .quiz-feedback { opacity:1; color:#3b82f6; }
         .quiz-option.quiz-disabled { pointer-events:none; }
         .quiz-option.quiz-dim { opacity:.45; }
-        .quiz-card-frame { width:76px; height:122px; border-radius:.7rem; overflow:hidden; border:1px solid rgba(168,127,243,.3); box-shadow:0 15px 30px -10px rgba(168,127,243,.15); flex-shrink:0; cursor:pointer; position:relative; }
+        .quiz-card-frame { width:76px; height:122px; border-radius:.7rem; overflow:hidden; border:1px solid rgba(var(--c-primary-rgb),.3); box-shadow:0 15px 30px -10px rgba(var(--c-primary-rgb),.15); flex-shrink:0; cursor:pointer; position:relative; }
         .quiz-card-frame img { width:100%; height:100%; object-fit:cover; display:block; }
         .quiz-card-frame::after {
             content:'\f05a'; font-family:'Font Awesome 6 Free'; font-weight:900;
             position:absolute; bottom:3px; right:3px; width:16px; height:16px; border-radius:50%;
-            background:rgba(0,0,0,.55); color:#d0a4ff; font-size:9px; display:flex; align-items:center; justify-content:center;
+            background:rgba(0,0,0,.55); color:var(--c-primary-light); font-size:9px; display:flex; align-items:center; justify-content:center;
         }
 
         /* ---- opções dentro do modal de deck ---- */
-        .deck-option { display:flex; align-items:center; gap:14px; width:100%; padding:12px 14px; border-radius:1rem; border:1px solid rgba(168,127,243,.22); background:rgba(37,27,77,.55); transition:all .2s ease; text-align:left; }
+        .deck-option { display:flex; align-items:center; gap:14px; width:100%; padding:12px 14px; border-radius:1rem; border:1px solid rgba(var(--c-primary-rgb),.22); background:rgba(var(--c-card-rgb),.55); transition:all .2s ease; text-align:left; }
         .deck-option:active { transform: scale(0.98); }
-        .deck-option.deck-option-active { border-color:#a87ff3; background:rgba(168,127,243,.16); box-shadow:0 0 0 1px rgba(168,127,243,.3) inset; }
+        .deck-option.deck-option-active { border-color:var(--c-primary); background:rgba(var(--c-primary-rgb),.16); box-shadow:0 0 0 1px rgba(var(--c-primary-rgb),.3) inset; }
         .deck-option .deck-check { opacity:0; transition:opacity .2s ease; }
         .deck-option.deck-option-active .deck-check { opacity:1; }
-        .deck-option img { width:68px; height:98px; border-radius:.6rem; object-fit:cover; border:1px solid rgba(168,127,243,.35); flex-shrink:0; }
+        .deck-option img { width:68px; height:98px; border-radius:.6rem; object-fit:cover; border:1px solid rgba(var(--c-primary-rgb),.35); flex-shrink:0; }
 
         /* ---- tabuleiro do Jogo de Treino ---- */
         .scr-board{ width:100%; max-width:640px; margin:0 auto; padding:4px 0 10px; display:flex; flex-direction:column; gap:10px; transition: all 0.3s ease; }
         .scr-row{ display:flex; flex-wrap:wrap; gap:10px; justify-content:center; transition: all 0.3s ease; }
 
         .scr-col{ flex:1 1 70px; max-width:150px; display:flex; flex-direction:column; align-items:center; min-width:0; }
-        .scr-house-title{ font-family:'Cinzel',serif; font-size:10px; letter-spacing:2px; text-transform:uppercase; color:#a87ff3; margin:0 0 10px; text-align:center; transition: all 0.3s ease; }
+        .scr-house-title{ font-family:'Cinzel',serif; font-size:10px; letter-spacing:2px; text-transform:uppercase; color:var(--c-primary); margin:0 0 10px; text-align:center; transition: all 0.3s ease; }
         .scr-slot{
-            width:100%; aspect-ratio:0.583; max-width:150px; border:1px solid rgba(168,127,243,.4);
-            border-radius:10px; background:rgba(168,127,243,.06); position:relative; overflow:hidden;
+            width:100%; aspect-ratio:0.583; max-width:150px; border:1px solid rgba(var(--c-primary-rgb),.4);
+            border-radius:10px; background:rgba(var(--c-primary-rgb),.06); position:relative; overflow:hidden;
             cursor:pointer; display:flex; align-items:center; justify-content:center; margin-bottom:10px;
             transition:all .3s ease;
         }
         .scr-slot:active{ transform:scale(.96); }
-        .scr-slot.empty{ border-style:dashed; color:#a398c2; font-family:'Cinzel',serif; font-size:10px; text-align:center; padding:6px; }
+        .scr-slot.empty{ border-style:dashed; color:var(--c-textMuted); font-family:'Cinzel',serif; font-size:10px; text-align:center; padding:6px; }
         .scr-slot img{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
         .scr-plate{
-            position:absolute; bottom:0; left:0; width:100%; max-width:100%; background:rgba(17,11,41,.9);
-            border-top:1px solid rgba(168,127,243,.5); color:#fff; font-family:'Cinzel',serif; font-weight:600;
+            position:absolute; bottom:0; left:0; width:100%; max-width:100%; background:rgba(var(--c-bg-rgb),.9);
+            border-top:1px solid rgba(var(--c-primary-rgb),.5); color:var(--c-textMain); font-family:'Cinzel',serif; font-weight:600;
             font-size:9.5px; letter-spacing:.6px; text-transform:uppercase; text-align:center; padding:6px 3px; line-height:1.35;
             transition: all 0.3s ease; box-sizing:border-box;
             overflow-wrap:break-word; word-break:break-word; hyphens:auto;
         }
-        .scr-caption{ font-size:8.5px; letter-spacing:1px; text-transform:uppercase; color:#a398c2; text-align:center; margin:-4px 0 10px; transition: all 0.3s ease; }
+        .scr-caption{ font-size:8.5px; letter-spacing:1px; text-transform:uppercase; color:var(--c-textMuted); text-align:center; margin:-4px 0 10px; transition: all 0.3s ease; }
 
         /* Estado "Selecionando" - Encolhe bastante para caber acima do painel de sorteio/escolha */
 .scr-board.selecting{ gap:2.3px; padding:2px 0 4px; }
@@ -184,7 +258,7 @@
            em modo de seleção. */
         #practiceBoard{ --hs-w: 40px; --hs-h: 64px; }
         .house-block{ display:flex; flex-direction:column; align-items:center; gap:calc(var(--hs-w) * 0.08); width:100%; max-width:100%; box-sizing:border-box; }
-        .house-title{ font-family:'Cinzel',serif; font-size:max(7px, calc(var(--hs-w) * 0.09)); letter-spacing:1px; text-transform:uppercase; color:#a87ff3; text-align:center; white-space:nowrap; transition:all .2s ease; }
+        .house-title{ font-family:'Cinzel',serif; font-size:max(7px, calc(var(--hs-w) * 0.09)); letter-spacing:1px; text-transform:uppercase; color:var(--c-primary); text-align:center; white-space:nowrap; transition:all .2s ease; }
         /* align-items:flex-start é essencial aqui: sem isso, o padrão do flexbox
            (stretch) força a altura dos .house-slot filhos a se esticarem para
            preencher o container em vez de respeitar o aspect-ratio do card —
@@ -214,18 +288,26 @@
             max-width:none !important;
             aspect-ratio:0.583 !important;
         }
+        .board-mandala .mandala-house.mandala-center{
+            transform: translate(-50%,-50%);
+            z-index:3;
+        }
+        .board-mandala .mandala-center .house-slot{
+            width:clamp(34px, 8.6vmin, 54px) !important;
+        }
+        .board-mandala .mandala-center .house-title{ color:var(--c-primary); }
         .house-slot{
-            width:var(--hs-w); max-width:calc(50% - 4px); height:var(--hs-h); aspect-ratio:0.583; border:1px solid rgba(168,127,243,.4);
-            border-radius:calc(var(--hs-w) * 0.14); background:rgba(168,127,243,.06); position:relative; overflow:hidden;
+            width:var(--hs-w); max-width:calc(50% - 4px); height:var(--hs-h); aspect-ratio:0.583; border:1px solid rgba(var(--c-primary-rgb),.4);
+            border-radius:calc(var(--hs-w) * 0.14); background:rgba(var(--c-primary-rgb),.06); position:relative; overflow:hidden;
             cursor:pointer; display:flex; align-items:center; justify-content:center; flex:0 1 auto; box-sizing:border-box;
             transition:width .2s ease, height .2s ease;
         }
         .house-slot:active{ transform:scale(.96); }
-        .house-slot.empty{ border-style:dashed; color:#a398c2; font-family:'Cinzel',serif; font-size:max(6px, calc(var(--hs-w) * 0.16)); text-align:center; padding:calc(var(--hs-w) * 0.06); line-height:1.15; }
+        .house-slot.empty{ border-style:dashed; color:var(--c-textMuted); font-family:'Cinzel',serif; font-size:max(6px, calc(var(--hs-w) * 0.16)); text-align:center; padding:calc(var(--hs-w) * 0.06); line-height:1.15; }
         .house-slot img{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
         .house-plate{
-            position:absolute; bottom:0; left:0; width:100%; max-width:100%; background:rgba(17,11,41,.9);
-            border-top:1px solid rgba(168,127,243,.5); color:#fff; font-family:'Cinzel',serif; font-weight:600;
+            position:absolute; bottom:0; left:0; width:100%; max-width:100%; background:rgba(var(--c-bg-rgb),.9);
+            border-top:1px solid rgba(var(--c-primary-rgb),.5); color:var(--c-textMain); font-family:'Cinzel',serif; font-weight:600;
             font-size:clamp(5.5px, calc(var(--hs-w) * 0.14), 15px); letter-spacing:.2px; text-transform:uppercase; text-align:center;
             padding:calc(var(--hs-w) * 0.05) calc(var(--hs-w) * 0.03); line-height:1.1; box-sizing:border-box;
             /* Permite quebrar palavras longas (ex: "CRESCIMENTO") em vez de cortá-las
@@ -255,8 +337,8 @@
         .shuffle-wrap{ position:relative; width:100%; height:80px; display:flex; align-items:center; justify-content:center; }
         .shuffle-card{
             width:36px;height:62px;border-radius:5px;
-            border:1px solid rgba(168,127,243,.6);
-            background:linear-gradient(160deg, #2b2058, #171033);
+            border:1px solid rgba(var(--c-primary-rgb),.6);
+            background:linear-gradient(160deg, var(--c-cardback-a), var(--c-cardback-b));
             position:absolute; animation:shuf 1.3s cubic-bezier(.25,1,.5,1) infinite;
         }
         @keyframes shuf{
@@ -268,15 +350,15 @@
         }
         .back-card{
             width:36px;height:62px;border-radius:5px;
-            border:1px solid rgba(168,127,243,.6);
-            background:linear-gradient(160deg, #2b2058, #171033);
+            border:1px solid rgba(var(--c-primary-rgb),.6);
+            background:linear-gradient(160deg, var(--c-cardback-a), var(--c-cardback-b));
             cursor:pointer; flex-shrink:0; transition:transform .25s ease;
-            display:flex;align-items:center;justify-content:center;color:#a87ff3;
+            display:flex;align-items:center;justify-content:center;color:var(--c-primary);
         }
         .back-card:active{ transform:translateY(-5px) scale(1.08); }
         .bottom-panel{
             position:fixed; left:0; right:0; bottom:0; width:100%;
-            background:#1c143c; border-top:1px solid rgba(168,127,243,.35);
+            background:var(--c-surface); border-top:1px solid rgba(var(--c-primary-rgb),.35);
             padding:14px 14px 22px; z-index:200; max-height:85vh; /* Ampliado para caber 56 cartas */
             box-shadow:0 -15px 35px rgba(0,0,0,.6);
             border-top-left-radius:1.5rem; border-top-right-radius:1.5rem;
@@ -288,6 +370,9 @@
 
     <!-- Header -->
     <header class="pt-4 pb-6 px-6 relative z-10">
+        <button onclick="toggleTheme()" id="themeToggleBtn" title="Tema" class="absolute top-2 right-4 w-9 h-9 rounded-full bg-app-surface border border-app-secondary/30 flex items-center justify-center text-app-primary shadow-lg z-20">
+            <i id="themeToggleIcon" class="fas fa-circle-half-stroke text-sm"></i>
+        </button>
         <div class="relative flex justify-center items-center mb-4">
             <div class="text-center">
                 <div class="moon-phases" style="margin-bottom:6px;">
@@ -441,6 +526,27 @@
             <button onclick="confirmMandalaDate()" class="pill-active w-full rounded-full py-3.5 text-xs font-semibold tracking-widest uppercase mt-6 shadow-lg shadow-app-primary/20">
                 Confirmar e Iniciar
             </button>
+        </div>
+    </div>
+
+    <!-- Preview da imagem da tiragem (gerada por shareReadingImage) -->
+    <div id="shareImageModal" class="fixed inset-0 z-[280] hidden items-center justify-center bg-app-bg/90 backdrop-blur-sm p-6">
+        <div class="w-full max-w-sm flex flex-col items-center">
+            <div id="shareImageSpinner" class="text-app-textMuted text-xs uppercase tracking-widest py-10">
+                <i class="fas fa-circle-notch fa-spin mr-2"></i> Gerando imagem...
+            </div>
+            <img id="shareImagePreview" class="hidden w-full rounded-2xl shadow-2xl mb-5" alt="Prévia da tiragem">
+            <div id="shareImageActions" class="hidden w-full flex flex-col gap-3">
+                <button id="shareImageNativeBtn" onclick="nativeShareImage()" class="hidden w-full pill-active rounded-full py-3.5 text-xs font-semibold tracking-widest uppercase shadow-lg shadow-app-primary/20">
+                    <i class="fas fa-share-nodes mr-1"></i> Compartilhar
+                </button>
+                <p id="shareImageHint" class="hidden text-app-textMuted text-[0.65rem] text-center leading-relaxed">
+                    Segure a imagem acima pra salvar ou compartilhar.
+                </p>
+                <button onclick="closeShareImageModal()" class="w-full text-app-textMuted text-xs uppercase tracking-widest py-2">
+                    Fechar
+                </button>
+            </div>
         </div>
     </div>
 
@@ -598,6 +704,9 @@
                         <button onclick="openMeaningMatches()" class="flex items-center gap-1.5 bg-app-surface border border-app-secondary/30 text-white rounded-full px-3 py-1.5 text-[0.6rem] font-semibold tracking-wide uppercase shadow-lg">
                             <i class="fas fa-link"></i> Significados Iguais
                         </button>
+                        <button onclick="shareReadingImage()" class="flex items-center gap-1.5 bg-app-surface border border-app-secondary/30 text-white rounded-full px-3 py-1.5 text-[0.6rem] font-semibold tracking-wide uppercase shadow-lg">
+                            <i class="fas fa-share-nodes"></i> Compartilhar
+                        </button>
                         <div id="togglePlateMeaningsBtn" class="ios-switch-wrap bg-app-surface border border-app-secondary/30 rounded-full px-3 py-1.5 shadow-lg">
                             <span class="ios-switch-label">Significados</span>
                             <div class="ios-switch on" onclick="togglePlateMeanings()">
@@ -669,6 +778,32 @@
     </div>
 
     <script>
+        /* ============================================================
+           TEMA (Místico / Preto / Branco)
+           ============================================================ */
+        const THEME_ORDER = ['mistico', 'preto', 'branco'];
+        const THEME_ICON = { mistico: 'fa-moon', preto: 'fa-circle-half-stroke', branco: 'fa-sun' };
+        function applyTheme(theme) {
+            document.documentElement.classList.toggle('theme-costar', theme === 'preto');
+            document.documentElement.classList.toggle('theme-branco', theme === 'branco');
+            const icon = document.getElementById('themeToggleIcon');
+            if (icon) icon.className = `fas ${THEME_ICON[theme] || 'fa-moon'} text-sm`;
+            try { localStorage.setItem('tarotTheme', theme); } catch (e) {}
+        }
+        function toggleTheme() {
+            let current = 'mistico';
+            if (document.documentElement.classList.contains('theme-costar')) current = 'preto';
+            else if (document.documentElement.classList.contains('theme-branco')) current = 'branco';
+            const next = THEME_ORDER[(THEME_ORDER.indexOf(current) + 1) % THEME_ORDER.length];
+            applyTheme(next);
+        }
+        (function initTheme() {
+            let saved = 'mistico';
+            try { saved = localStorage.getItem('tarotTheme') || 'mistico'; } catch (e) {}
+            if (!THEME_ORDER.includes(saved)) saved = 'mistico';
+            applyTheme(saved);
+        })();
+
         const baseUrl = "https://marycusack.com/Decks/Images/Tarot/S/SeventhSphere2/";
         const baseRW  = "https://trilhasnouniverso.com.br/wp-content/uploads/2024/12/";
 
@@ -1683,7 +1818,8 @@ rawData.forEach(card => {
                     { id: 'mcasa9', label: 'Casa 9' },
                     { id: 'mcasa10', label: 'Casa 10' },
                     { id: 'mcasa11', label: 'Casa 11' },
-                    { id: 'mcasa12', label: 'Casa 12' }
+                    { id: 'mcasa12', label: 'Casa 12' },
+                    { id: 'mcasa0', label: 'Casa 0 · Central' }
                 ]
             }
         };
@@ -1946,15 +2082,18 @@ rawData.forEach(card => {
             return w;
         }
 
-        // "Progride" o tempo: desloca o conteúdo de cada casa 3 posições pra
-        // frente (a casa 1 herda o que estava na casa 4, e assim por diante).
+        // "Progride" o tempo: desloca o conteúdo das 12 casas externas 3 posições
+        // pra frente (a casa 1 herda o que estava na casa 4, e assim por diante).
+        // A Casa 0 (central) fica fixa — é o significador, não avança com o tempo.
         function progressMandalaTime() {
             if (currentGameKey !== 'mandala') return;
-            const newState = {};
-            houseOrder.forEach((h, idx) => {
+            const outerHouses = houseOrder.slice(0, 12);
+            const centerHouse = houseOrder[12];
+            const newState = { [centerHouse]: practiceState[centerHouse] };
+            outerHouses.forEach((h, idx) => {
                 const houseNum = idx + 1;
                 const targetNum = wrapMandalaHouse(houseNum);
-                const targetId = houseOrder[targetNum - 1];
+                const targetId = outerHouses[targetNum - 1];
                 newState[targetId] = practiceState[h];
             });
             practiceState = newState;
@@ -2636,6 +2775,201 @@ rawData.forEach(card => {
             closeShuffle(); closeChoosePanel(); closeSlotAction();
         }
 
+        /* ============================================================
+           COMPARTILHAR TIRAGEM COMO IMAGEM
+           Tira um "print" do tabuleiro atual (funciona pra qualquer jogo,
+           já que captura o que estiver renderizado em #practiceBoard) e
+           monta um quadrado com cantos arredondados na cor do tema atual,
+           com o nome do jogo em cima e o tabuleiro centralizado.
+           ============================================================ */
+        let shareImageBlob = null;
+
+        function themeVar(name, fallback) {
+            const v = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+            return v || fallback;
+        }
+
+        function roundRectPath(ctx, x, y, w, h, r) {
+            ctx.beginPath();
+            ctx.moveTo(x + r, y);
+            ctx.arcTo(x + w, y, x + w, y + h, r);
+            ctx.arcTo(x + w, y + h, x, y + h, r);
+            ctx.arcTo(x, y + h, x, y, r);
+            ctx.arcTo(x, y, x + w, y, r);
+            ctx.closePath();
+        }
+
+        // Tenta baixar uma imagem e devolver como data URL (base64), que é sempre
+        // seguro pra desenhar num canvas e exportar, não importa a origem.
+        // 1ª tentativa: direto. 2ª tentativa: via proxy que adiciona CORS.
+        async function fetchAsDataURL(url) {
+            const attempts = [
+                url,
+                'https://images.weserv.nl/?url=' + encodeURIComponent(url.replace(/^https?:\/\//, '')) + '&output=png',
+                'https://corsproxy.io/?url=' + encodeURIComponent(url)
+            ];
+            for (const attemptUrl of attempts) {
+                try {
+                    const controller = new AbortController();
+                    const timeout = setTimeout(() => controller.abort(), 9000);
+                    const res = await fetch(attemptUrl, { signal: controller.signal, mode: 'cors' });
+                    clearTimeout(timeout);
+                    if (!res.ok) continue;
+                    const blob = await res.blob();
+                    if (!blob.type.startsWith('image/')) continue;
+                    const dataUrl = await new Promise((resolve, reject) => {
+                        const reader = new FileReader();
+                        reader.onload = () => resolve(reader.result);
+                        reader.onerror = reject;
+                        reader.readAsDataURL(blob);
+                    });
+                    return dataUrl;
+                } catch (e) { /* tenta a próxima opção */ }
+            }
+            return null;
+        }
+
+        async function shareReadingImage() {
+            const board = document.getElementById('practiceBoard');
+            if (!board || !board.innerHTML.trim()) return;
+
+            const modal = document.getElementById('shareImageModal');
+            const spinner = document.getElementById('shareImageSpinner');
+            const previewImg = document.getElementById('shareImagePreview');
+            const actions = document.getElementById('shareImageActions');
+            modal.classList.remove('hidden'); modal.classList.add('flex');
+            spinner.classList.remove('hidden');
+            spinner.innerHTML = '<i class="fas fa-circle-notch fa-spin mr-2"></i> Baixando as cartas...';
+            previewImg.classList.add('hidden');
+            actions.classList.add('hidden');
+            shareImageBlob = null;
+
+            // Clone "fora da tela" do tabuleiro: convertemos as imagens dele pra
+            // base64 e rodamos o html2canvas nesse clone, sem tocar no app real.
+            const boardClone = board.cloneNode(true);
+            boardClone.style.position = 'fixed';
+            boardClone.style.left = '-99999px';
+            boardClone.style.top = '0';
+            boardClone.style.width = board.offsetWidth + 'px';
+            boardClone.style.margin = '0';
+            document.body.appendChild(boardClone);
+
+            try {
+                if (document.fonts && document.fonts.ready) { await document.fonts.ready; }
+
+                const imgs = Array.from(boardClone.querySelectorAll('img'));
+                await Promise.all(imgs.map(async img => {
+                    const original = img.getAttribute('src') || '';
+                    if (!/^https?:\/\//.test(original)) return;
+                    const dataUrl = await fetchAsDataURL(original);
+                    if (dataUrl) {
+                        img.src = dataUrl;
+                    } else {
+                        // Nenhuma tentativa funcionou: mantém o slot visível, sem imagem quebrada
+                        img.removeAttribute('src');
+                        img.style.background = 'rgba(150,150,150,.25)';
+                    }
+                }));
+
+                spinner.innerHTML = '<i class="fas fa-circle-notch fa-spin mr-2"></i> Montando a imagem...';
+
+                const boardCanvas = await html2canvas(boardClone, {
+                    backgroundColor: null,
+                    scale: 3,
+                    useCORS: true
+                });
+
+                const c_bg = themeVar('--c-bg', '#110b29');
+                const c_primary = themeVar('--c-primary', '#a87ff3');
+                const c_textMuted = themeVar('--c-textMuted', '#a398c2');
+
+                const SIZE = 1080;
+                const PAD = 60;
+                const out = document.createElement('canvas');
+                out.width = SIZE; out.height = SIZE;
+                const ctx = out.getContext('2d');
+
+                // Molde quadrado com cantos arredondados na cor do tema
+                roundRectPath(ctx, 0, 0, SIZE, SIZE, 56);
+                ctx.clip();
+                ctx.fillStyle = c_bg;
+                ctx.fillRect(0, 0, SIZE, SIZE);
+                // Borda sutil na cor de destaque do tema
+                roundRectPath(ctx, 3, 3, SIZE - 6, SIZE - 6, 52);
+                ctx.strokeStyle = c_primary;
+                ctx.lineWidth = 3;
+                ctx.globalAlpha = 0.5;
+                ctx.stroke();
+                ctx.globalAlpha = 1;
+
+                // Título: nome do jogo + método
+                const gameLabel = (GAMES[currentGameKey] && GAMES[currentGameKey].label) || 'Tarot';
+                const methodLabel = (READING_METHODS[currentMethod] && READING_METHODS[currentMethod].sub) || '';
+                ctx.textAlign = 'center';
+                ctx.fillStyle = c_primary;
+                ctx.font = '700 38px Cinzel, serif';
+                ctx.fillText(gameLabel.toUpperCase(), SIZE / 2, PAD + 20);
+                ctx.fillStyle = c_textMuted;
+                ctx.font = '400 20px Inter, sans-serif';
+                ctx.fillText(methodLabel, SIZE / 2, PAD + 56);
+
+                // Tabuleiro centralizado, ocupando o máximo de espaço disponível
+                // (permitimos ampliar, não só encolher — por isso as cartas não
+                // ficam minúsculas quando o tabuleiro original é pequeno na tela)
+                const topArea = PAD + 90;
+                const bottomArea = SIZE - PAD - 50;
+                const maxW = SIZE - PAD * 1.2;
+                const maxH = bottomArea - topArea;
+                const scaleFit = Math.min(maxW / boardCanvas.width, maxH / boardCanvas.height);
+                const drawW = boardCanvas.width * scaleFit;
+                const drawH = boardCanvas.height * scaleFit;
+                const drawX = (SIZE - drawW) / 2;
+                const drawY = topArea + (maxH - drawH) / 2;
+                ctx.drawImage(boardCanvas, drawX, drawY, drawW, drawH);
+
+                // Rodapé
+                const dateStr = new Date().toLocaleDateString('pt-BR');
+                ctx.fillStyle = c_textMuted;
+                ctx.font = '600 18px Cinzel, serif';
+                ctx.globalAlpha = 0.85;
+                ctx.fillText(`TAROT · ${dateStr}`, SIZE / 2, SIZE - PAD + 10);
+                ctx.globalAlpha = 1;
+
+                out.toBlob(blob => {
+                    shareImageBlob = blob;
+                    const url = URL.createObjectURL(blob);
+                    previewImg.src = url;
+                    spinner.classList.add('hidden');
+                    previewImg.classList.remove('hidden');
+                    actions.classList.remove('hidden');
+                    const nativeBtn = document.getElementById('shareImageNativeBtn');
+                    const hint = document.getElementById('shareImageHint');
+                    const canNativeShare = !!(navigator.share && navigator.canShare &&
+                        navigator.canShare({ files: [new File([blob], 'tarot.png', { type: 'image/png' })] }));
+                    nativeBtn.classList.toggle('hidden', !canNativeShare);
+                    hint.classList.toggle('hidden', canNativeShare);
+                }, 'image/png');
+            } catch (e) {
+                spinner.innerHTML = 'Não foi possível gerar a imagem. Tenta de novo ou tira um print da tela.';
+                console.error('shareReadingImage error:', e);
+            } finally {
+                if (boardClone.parentNode) document.body.removeChild(boardClone);
+            }
+        }
+
+        async function nativeShareImage() {
+            if (!shareImageBlob) return;
+            try {
+                const file = new File([shareImageBlob], 'tarot.png', { type: 'image/png' });
+                await navigator.share({ files: [file], title: 'Minha tiragem de Tarot' });
+            } catch (e) { /* usuário cancelou o share, ignora */ }
+        }
+
+        function closeShareImageModal() {
+            const modal = document.getElementById('shareImageModal');
+            modal.classList.add('hidden'); modal.classList.remove('flex');
+        }
+
         function practiceReset() {
             practiceState = freshPracticeState();
             meaningIndex = 0;
@@ -2850,9 +3184,9 @@ rawData.forEach(card => {
             } else if (currentGameKey === 'ta') {
                 board.innerHTML = `
                     <div class="board-columns">
-                        <div class="board-col">${['a_mental','a_sentimental','a_atitude'].map(h => houseBlockHTML(h)).join('')}</div>
-                        <div class="board-col">${houseBlockHTML('futuro')}</div>
                         <div class="board-col">${['b_mental','b_sentimental','b_atitude'].map(h => houseBlockHTML(h)).join('')}</div>
+                        <div class="board-col">${houseBlockHTML('futuro')}</div>
+                        <div class="board-col">${['a_mental','a_sentimental','a_atitude'].map(h => houseBlockHTML(h)).join('')}</div>
                     </div>`;
             } else if (currentGameKey === 'davi') {
                 board.innerHTML = `
@@ -2897,11 +3231,15 @@ rawData.forEach(card => {
         }
 
         // Dispõe as 12 casas em círculo, na convenção astrológica padrão
-        // (Casa 1 à esquerda / Ascendente, Casa 10 no topo / Meio do Céu).
+        // (Casa 1 à esquerda / Ascendente, Casa 10 no topo / Meio do Céu),
+        // e a Casa 0 (carta central/significador) fixa bem no meio.
         function renderMandalaBoard(board) {
+            const outerHouses = houseOrder.slice(0, 12);
+            const centerHouse = houseOrder[12];
             board.innerHTML = `
                 <div class="board-mandala">
-                    ${houseOrder.map((h, i) => `
+                    <div class="mandala-house mandala-center">${houseBlockHTML(centerHouse)}</div>
+                    ${outerHouses.map((h, i) => `
                         <div class="mandala-house" style="--ang:${mandalaHouseAngles[i + 1]}deg;">
                             ${houseBlockHTML(h)}
                         </div>
