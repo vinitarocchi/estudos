@@ -270,30 +270,45 @@
            as duas cartas de uma casa jamais estouram a tela. */
         .house-pair.single-slot .house-slot{ max-width:100%; }
 
+        /* Método Europeu: Menor "encaixado" dentro do Maior, como numa tiragem física */
+        .composite-slot{ position:relative; overflow:visible; }
+        .composite-inset{
+            position:absolute; top:8%; left:50%; transform:translateX(-50%);
+            width:48%; aspect-ratio:0.583; border-radius:4px; overflow:hidden;
+            border:2px solid var(--c-bg); box-shadow:0 3px 10px rgba(0,0,0,.55);
+            background:var(--c-card); z-index:2;
+        }
+        .composite-inset img{ width:100%; height:100%; object-fit:cover; display:block; }
+        .composite-inset.empty{
+            display:flex; align-items:center; justify-content:center;
+            font-size:.5rem; color:var(--c-textMuted); text-align:center;
+        }
+
         /* ---------- Mandala Astrológica: 12 casas em círculo ---------- */
         .board-mandala{
-            position:relative; width:100%; max-width:420px; aspect-ratio:1;
-            margin:14px auto 6px;
+            position:relative; width:100%; max-width:560px; aspect-ratio:1;
+            margin:18px auto 10px;
         }
         .board-mandala .mandala-house{
             position:absolute; top:50%; left:50%;
-            transform: translate(-50%,-50%) rotate(var(--ang)) translateY(calc(-1 * clamp(80px, 33vmin, 165px))) rotate(calc(-1 * var(--ang)));
+            transform: translate(-50%,-50%) rotate(var(--ang)) translateY(calc(-1 * clamp(100px, 37vmin, 215px))) rotate(calc(-1 * var(--ang)));
         }
         .board-mandala .house-block{ display:flex; flex-direction:column; align-items:center; gap:2px; }
-        .board-mandala .house-title{ font-size:0.55rem; white-space:nowrap; margin-bottom:2px; }
+        .board-mandala .house-title{ font-size:0.62rem; white-space:nowrap; margin-bottom:2px; }
         .board-mandala .house-pair{ flex-direction:column; align-items:center; gap:3px; }
         .board-mandala .house-slot{
-            width:clamp(28px, 7.4vmin, 44px) !important;
+            width:clamp(48px, 11.5vmin, 74px) !important;
             height:auto !important;
             max-width:none !important;
             aspect-ratio:0.583 !important;
         }
+        .board-mandala .composite-inset{ width:52%; }
         .board-mandala .mandala-house.mandala-center{
             transform: translate(-50%,-50%);
             z-index:3;
         }
         .board-mandala .mandala-center .house-slot{
-            width:clamp(34px, 8.6vmin, 54px) !important;
+            width:clamp(58px, 13.5vmin, 88px) !important;
         }
         .board-mandala .mandala-center .house-title{ color:var(--c-primary); }
         .house-slot{
@@ -566,19 +581,19 @@
         <div class="bg-app-surface border border-app-secondary/30 rounded-3xl p-6 w-[85%] max-w-xs shadow-2xl">
             <p class="text-white font-cinzel text-sm tracking-widest uppercase text-center mb-5">Escolher Deck</p>
             <div class="flex flex-col gap-3">
-                <button id="deckOption-padrao" class="deck-option" onclick="selectDeckOption('padrao')">
-                    <img src="https://marycusack.com/Decks/Images/Tarot/S/SeventhSphere2/00%20Fool.jpg" alt="Default">
-                    <div class="flex-1 min-w-0">
-                        <p class="font-cinzel text-white text-sm font-semibold">Default</p>
-                        <p class="text-app-textMuted text-[0.65rem]">Seventh Sphere</p>
-                    </div>
-                    <i class="fas fa-circle-check text-app-primary deck-check"></i>
-                </button>
                 <button id="deckOption-riderwaite" class="deck-option" onclick="selectDeckOption('riderwaite')">
                     <img src="https://trilhasnouniverso.com.br/wp-content/uploads/2024/12/00-scaled.jpg" alt="Rider Waite">
                     <div class="flex-1 min-w-0">
                         <p class="font-cinzel text-white text-sm font-semibold">Rider Waite</p>
-                        <p class="text-app-textMuted text-[0.65rem]">Deck clássico</p>
+                        <p class="text-app-textMuted text-[0.65rem]">Deck clássico · padrão</p>
+                    </div>
+                    <i class="fas fa-circle-check text-app-primary deck-check"></i>
+                </button>
+                <button id="deckOption-padrao" class="deck-option" onclick="selectDeckOption('padrao')">
+                    <img src="https://marycusack.com/Decks/Images/Tarot/S/SeventhSphere2/00%20Fool.jpg" alt="Seventh Sphere Tarot">
+                    <div class="flex-1 min-w-0">
+                        <p class="font-cinzel text-white text-sm font-semibold">Seventh Sphere Tarot</p>
+                        <p class="text-app-textMuted text-[0.65rem]">Baralho alternativo</p>
                     </div>
                     <i class="fas fa-circle-check text-app-primary deck-check"></i>
                 </button>
@@ -1741,7 +1756,7 @@ rawData.forEach(card => {
         let activeFilter = 'todos';
         let activeSuit = 'todos';
         let searchQuery = '';
-        let currentDeck = 'padrao';
+        let currentDeck = 'riderwaite';
 
         /* ============================================================
            JOGOS DISPONÍVEIS NO MODO PRATICAR LEITURA
@@ -1951,7 +1966,7 @@ rawData.forEach(card => {
             return card.imgUrl;
         }
 
-        let selectedDeckTemp = 'padrao';
+        let selectedDeckTemp = 'riderwaite';
         let deckModalPurpose = 'practice'; // 'practice' | 'quiz' — define o que abrir depois de escolher o deck
 
         /* ---------- Modal de escolha do JOGO ---------- */
@@ -2799,34 +2814,81 @@ rawData.forEach(card => {
             ctx.closePath();
         }
 
+        // Cache: se a mesma carta já foi baixada (ou já está sendo baixada em
+        // segundo plano), reaproveita em vez de baixar de novo.
+        const shareImageDataCache = {};
+        const shareImagePending = {};
+
         // Tenta baixar uma imagem e devolver como data URL (base64), que é sempre
         // seguro pra desenhar num canvas e exportar, não importa a origem.
-        // 1ª tentativa: direto. 2ª tentativa: via proxy que adiciona CORS.
-        async function fetchAsDataURL(url) {
+        // Pulamos a tentativa "direta" pros hosts de carta conhecidos porque eles
+        // não mandam cabeçalho CORS e isso só desperdiça tempo — vamos direto pro
+        // proxy, já pedindo a imagem num tamanho menor (mais rápido de baixar).
+        function fetchAsDataURL(url) {
+            if (shareImageDataCache[url]) return Promise.resolve(shareImageDataCache[url]);
+            if (shareImagePending[url]) return shareImagePending[url];
+
+            const bare = url.replace(/^https?:\/\//, '');
             const attempts = [
-                url,
-                'https://images.weserv.nl/?url=' + encodeURIComponent(url.replace(/^https?:\/\//, '')) + '&output=png',
-                'https://corsproxy.io/?url=' + encodeURIComponent(url)
+                'https://images.weserv.nl/?url=' + encodeURIComponent(bare) + '&w=600&output=png',
+                'https://corsproxy.io/?url=' + encodeURIComponent(url),
+                url // último recurso, caso o host permita CORS afinal
             ];
-            for (const attemptUrl of attempts) {
-                try {
-                    const controller = new AbortController();
-                    const timeout = setTimeout(() => controller.abort(), 9000);
-                    const res = await fetch(attemptUrl, { signal: controller.signal, mode: 'cors' });
-                    clearTimeout(timeout);
-                    if (!res.ok) continue;
-                    const blob = await res.blob();
-                    if (!blob.type.startsWith('image/')) continue;
-                    const dataUrl = await new Promise((resolve, reject) => {
-                        const reader = new FileReader();
-                        reader.onload = () => resolve(reader.result);
-                        reader.onerror = reject;
-                        reader.readAsDataURL(blob);
-                    });
-                    return dataUrl;
-                } catch (e) { /* tenta a próxima opção */ }
+
+            const promise = (async () => {
+                for (const attemptUrl of attempts) {
+                    try {
+                        const controller = new AbortController();
+                        const timeout = setTimeout(() => controller.abort(), 10000);
+                        const res = await fetch(attemptUrl, { signal: controller.signal, mode: 'cors' });
+                        clearTimeout(timeout);
+                        if (!res.ok) continue;
+                        const blob = await res.blob();
+                        if (!blob.type.startsWith('image/')) continue;
+                        const dataUrl = await new Promise((resolve, reject) => {
+                            const reader = new FileReader();
+                            reader.onload = () => resolve(reader.result);
+                            reader.onerror = reject;
+                            reader.readAsDataURL(blob);
+                        });
+                        shareImageDataCache[url] = dataUrl;
+                        return dataUrl;
+                    } catch (e) { /* tenta a próxima opção */ }
+                }
+                return null;
+            })();
+
+            shareImagePending[url] = promise;
+            promise.finally(() => { delete shareImagePending[url]; });
+            return promise;
+        }
+
+        // Assim que uma carta aparece no tabuleiro (sorteada ou escolhida), já
+        // começa a baixá-la em segundo plano — quando o usuário clicar em
+        // "Compartilhar" mais tarde, a maioria (ou todas) já vai estar pronta.
+        function prefetchBoardImages() {
+            try {
+                getBoardCards().forEach(({ card }) => {
+                    const url = cardImg(card);
+                    if (url) fetchAsDataURL(url);
+                });
+            } catch (e) { /* prefetch é best-effort, nunca deve travar o app */ }
+        }
+
+        // Roda `fn` em paralelo mas no máximo `limit` de cada vez — baixar as ~15
+        // imagens todas ao mesmo tempo sobrecarrega os proxies gratuitos e faz
+        // algumas falharem por timeout; em lotes pequenos fica bem mais estável.
+        async function mapWithConcurrency(items, limit, fn) {
+            const results = new Array(items.length);
+            let next = 0;
+            async function worker() {
+                while (next < items.length) {
+                    const i = next++;
+                    results[i] = await fn(items[i], i);
+                }
             }
-            return null;
+            await Promise.all(new Array(Math.min(limit, items.length)).fill(0).map(worker));
+            return results;
         }
 
         async function shareReadingImage() {
@@ -2858,7 +2920,7 @@ rawData.forEach(card => {
                 if (document.fonts && document.fonts.ready) { await document.fonts.ready; }
 
                 const imgs = Array.from(boardClone.querySelectorAll('img'));
-                await Promise.all(imgs.map(async img => {
+                await mapWithConcurrency(imgs, 6, async img => {
                     const original = img.getAttribute('src') || '';
                     if (!/^https?:\/\//.test(original)) return;
                     const dataUrl = await fetchAsDataURL(original);
@@ -2869,13 +2931,13 @@ rawData.forEach(card => {
                         img.removeAttribute('src');
                         img.style.background = 'rgba(150,150,150,.25)';
                     }
-                }));
+                });
 
                 spinner.innerHTML = '<i class="fas fa-circle-notch fa-spin mr-2"></i> Montando a imagem...';
 
                 const boardCanvas = await html2canvas(boardClone, {
                     backgroundColor: null,
-                    scale: 3,
+                    scale: 2.25,
                     useCORS: true
                 });
 
@@ -2883,19 +2945,21 @@ rawData.forEach(card => {
                 const c_primary = themeVar('--c-primary', '#a87ff3');
                 const c_textMuted = themeVar('--c-textMuted', '#a398c2');
 
-                const SIZE = 1080;
+                // Proporção 3:4 (retrato) — dá mais espaço vertical pras cartas
+                // do que um quadrado 1:1, especialmente em jogos com várias casas.
+                const W = 1080, H = 1440;
                 const PAD = 60;
                 const out = document.createElement('canvas');
-                out.width = SIZE; out.height = SIZE;
+                out.width = W; out.height = H;
                 const ctx = out.getContext('2d');
 
-                // Molde quadrado com cantos arredondados na cor do tema
-                roundRectPath(ctx, 0, 0, SIZE, SIZE, 56);
+                // Molde com cantos arredondados na cor do tema
+                roundRectPath(ctx, 0, 0, W, H, 56);
                 ctx.clip();
                 ctx.fillStyle = c_bg;
-                ctx.fillRect(0, 0, SIZE, SIZE);
+                ctx.fillRect(0, 0, W, H);
                 // Borda sutil na cor de destaque do tema
-                roundRectPath(ctx, 3, 3, SIZE - 6, SIZE - 6, 52);
+                roundRectPath(ctx, 3, 3, W - 6, H - 6, 52);
                 ctx.strokeStyle = c_primary;
                 ctx.lineWidth = 3;
                 ctx.globalAlpha = 0.5;
@@ -2908,22 +2972,22 @@ rawData.forEach(card => {
                 ctx.textAlign = 'center';
                 ctx.fillStyle = c_primary;
                 ctx.font = '700 38px Cinzel, serif';
-                ctx.fillText(gameLabel.toUpperCase(), SIZE / 2, PAD + 20);
+                ctx.fillText(gameLabel.toUpperCase(), W / 2, PAD + 20);
                 ctx.fillStyle = c_textMuted;
                 ctx.font = '400 20px Inter, sans-serif';
-                ctx.fillText(methodLabel, SIZE / 2, PAD + 56);
+                ctx.fillText(methodLabel, W / 2, PAD + 56);
 
                 // Tabuleiro centralizado, ocupando o máximo de espaço disponível
                 // (permitimos ampliar, não só encolher — por isso as cartas não
                 // ficam minúsculas quando o tabuleiro original é pequeno na tela)
                 const topArea = PAD + 90;
-                const bottomArea = SIZE - PAD - 50;
-                const maxW = SIZE - PAD * 1.2;
+                const bottomArea = H - PAD - 50;
+                const maxW = W - PAD * 1.2;
                 const maxH = bottomArea - topArea;
                 const scaleFit = Math.min(maxW / boardCanvas.width, maxH / boardCanvas.height);
                 const drawW = boardCanvas.width * scaleFit;
                 const drawH = boardCanvas.height * scaleFit;
-                const drawX = (SIZE - drawW) / 2;
+                const drawX = (W - drawW) / 2;
                 const drawY = topArea + (maxH - drawH) / 2;
                 ctx.drawImage(boardCanvas, drawX, drawY, drawW, drawH);
 
@@ -2932,7 +2996,7 @@ rawData.forEach(card => {
                 ctx.fillStyle = c_textMuted;
                 ctx.font = '600 18px Cinzel, serif';
                 ctx.globalAlpha = 0.85;
-                ctx.fillText(`TAROT · ${dateStr}`, SIZE / 2, SIZE - PAD + 10);
+                ctx.fillText(`TAROT · ${dateStr}`, W / 2, H - PAD + 10);
                 ctx.globalAlpha = 1;
 
                 out.toBlob(blob => {
@@ -3055,7 +3119,7 @@ rawData.forEach(card => {
             // depende da PRÓPRIA largura final da carta, não de maxWidth. Por isso resolvemos
             // a equação já considerando esse gap proporcional: pairsInWidestRow*(2w + 0.08w) + gapsEntrePares = containerWidth
             const gapFactor = 0.08;
-            const slotsPerHouse = activeTipos().length; // 2 no método Europeu (duplas), 1 no Americano
+            const slotsPerHouse = 1; // sempre 1 agora: no Europeu o Menor fica sobreposto ao Maior, não ao lado
             const totalGapsBetweenGroups = (pairsInWidestRow - 1) * gapBetweenGroups;
             const widthFromWidth = Math.floor((containerWidth - totalGapsBetweenGroups - 2) / (pairsInWidestRow * (slotsPerHouse + gapFactor)));
 
@@ -3170,6 +3234,7 @@ rawData.forEach(card => {
 
         function renderPracticeBoard() {
             const board = document.getElementById('practiceBoard');
+            prefetchBoardImages();
             if (currentGameKey === 'scr') { renderScrBoard(board); return; }
             if (currentGameKey === 'mandala') { renderMandalaBoard(board); return; }
 
@@ -3260,13 +3325,39 @@ rawData.forEach(card => {
                 </div>`;
         }
 
+        // Método Europeu: em vez de Maior e Menor lado a lado, o Menor fica
+        // como uma carta pequena "encaixada" em cima do Maior (acima da área
+        // do nome), como numa tiragem física real.
+        function practiceSlotHTMLComposite(house) {
+            const major = practiceState[house]['maior'];
+            const minor = practiceState[house]['menor'];
+
+            const majorInner = major
+                ? `<img src="${cardImg(major)}" onerror="this.src='https://placehold.co/200x300/1c143c/a87ff3?text=${encodeURIComponent(major.name)}'">
+                   ${showPlateMeanings ? `<div class="house-plate">${plateWord(major)}</div>` : ''}`
+                : tipoShort('maior');
+
+            const minorInner = minor
+                ? `<img src="${cardImg(minor)}" onerror="this.src='https://placehold.co/200x300/1c143c/a87ff3?text=${encodeURIComponent(minor.name)}'">`
+                : tipoShort('menor');
+
+            return `
+                <div onclick="onPracticeSlotClick('${house}','maior')" class="house-slot composite-slot${major ? '' : ' empty'}">
+                    ${majorInner}
+                    <div onclick="event.stopPropagation(); onPracticeSlotClick('${house}','menor')" class="composite-inset${minor ? '' : ' empty'}">
+                        ${minorInner}
+                    </div>
+                </div>`;
+        }
+
         function houseBlockHTML(houseId) {
             const tipos = activeTipos();
+            const isComposite = tipos.length === 2; // Método Europeu: Menor dentro do Maior
             return `
                 <div class="house-block">
                     <div class="house-title">${houseLabel[houseId]}</div>
-                    <div class="house-pair${tipos.length === 1 ? ' single-slot' : ''}">
-                        ${tipos.map(t => practiceSlotHTMLCompact(houseId, t)).join('')}
+                    <div class="house-pair single-slot">
+                        ${isComposite ? practiceSlotHTMLComposite(houseId) : tipos.map(t => practiceSlotHTMLCompact(houseId, t)).join('')}
                     </div>
                 </div>`;
         }
