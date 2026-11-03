@@ -473,6 +473,29 @@
             #cardModal > div.absolute.bottom-0 { left:0 !important; right:0 !important; margin-left:auto; margin-right:auto; width:min(100%, 840px) !important; }
             #meaningMatchModal > div { max-width:560px; }
         }
+        /* PC (mouse): botões acima das cartas maiores e legíveis, independente da largura da janela */
+        @media (hover:hover) and (pointer:fine) {
+            .filter-btn, #suitFilters button { font-size:1rem !important; padding:12px 24px !important; gap:8px !important; min-height:46px; }
+            .filter-btn i { font-size:.95rem !important; }
+            #searchInput { font-size:1.05rem; padding-top:18px; padding-bottom:18px; }
+            #themeToggleBtn { width:46px; height:46px; }
+            #themeToggleIcon { font-size:1.15rem; }
+            #cardCount { font-size:1rem; }
+            .fab-btn { font-size:1rem; }
+            #practiceHeader h2 { font-size:1.6rem; }
+            #practiceGameName { font-size:.9rem; margin-top:6px; }
+            #practiceHeader .flex-wrap { gap:10px; margin-top:14px; }
+            #practiceHeader .flex-wrap > button,
+            #practiceHeader .flex-wrap > #togglePlateMeaningsBtn { font-size:.95rem !important; padding:11px 20px !important; gap:9px !important; letter-spacing:.04em; min-height:44px; }
+            #practiceHeader .flex-wrap > button i { font-size:1rem; }
+            #practiceHeader .ios-switch-label { font-size:.95rem; letter-spacing:.04em; }
+            #practiceHeader .ios-switch { width:46px; height:26px; }
+            #practiceHeader .ios-switch .ios-switch-knob { top:2px; left:2px; width:20px; height:20px; }
+            #practiceHeader .ios-switch.on .ios-switch-knob { transform:translateX(20px); }
+            #practiceHeader > button { width:44px; height:44px; }
+            #practiceHeader > button i { font-size:1.1rem; }
+            #mandalaPeriodLabel { font-size:.9rem; }
+        }
         @media (min-width: 1360px) {
             body > header, body > main { max-width:1360px; }
             #cardsGrid { grid-template-columns:repeat(3,minmax(0,1fr)); }
